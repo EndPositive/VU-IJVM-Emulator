@@ -5,7 +5,7 @@
 
 typedef struct buffer {
     int data_size;
-    byte_t *data;
+    word_t *data;
     int constant_pos;
     int constant_size;
     word_t *constants;
@@ -13,13 +13,6 @@ typedef struct buffer {
     int text_size;
     byte_t *text;
 } buffer_t;
-
-/**
- * @param data, byte array.
- * @param pos, index of first byte to obtain.
- * @return Returns a word of the concurrent 4 words.
- **/
-word_t btow(byte_t *data, word_t pos);
 
 /**
  * @param buffer object to fill
@@ -33,7 +26,7 @@ int get_blocks(buffer_t *buffer);
  * Returns  0 on success
  *         -1 on failure
  **/
-int check_magic(byte_t *data);
+int check_magic(word_t *data);
 
 /**
  * @param buffer to parse into

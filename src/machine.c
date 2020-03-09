@@ -1,124 +1,244 @@
 #include <ijvm.h>
 #include <binary.h>
+#include <stack.h>
 #include <stdlib.h>
 
-int pc = 0;
+int pc;
 buffer_t *buffer;
+FILE *out;
+FILE *in;
 
-int init_ijvm(char *binary_file)
-{
+int init_ijvm(char *binary_file) {
+    pc = 0;
     buffer = (buffer_t *)malloc(sizeof(buffer_t));
-    if (!parse(buffer, binary_file)) {
-        printf("DEBUG2");
-        return -1;
-    }
+    if (!parse(buffer, binary_file)) return -1;
+
+    if (!init_stack(1000)) return -1;
+
     return 1;
 }
 
-void destroy_ijvm()
-{
+void destroy_ijvm() {
+    destroy_stack();
+
     free(buffer->data);
     free(buffer->constants);
     free(buffer->text);
     free(buffer);
 }
 
-void run()
-{
+void run() {
     while (step());
 }
 
-void set_input(FILE *fp)
-{
-  // TODO: implement me
+void set_input(FILE *fp) {
+    in = fp;
 }
 
-void set_output(FILE *fp)
-{
-  // TODO: implement me
+void set_output(FILE *fp) {
+    out = fp;
+}
+
+void doBIPUSH() {
+    push((int8_t) buffer->text[pc + 1]);
+    printf("%s 0x%x %i\n", "BIPUSH", (int8_t) buffer->text[pc + 1], (int8_t) buffer->text[pc + 1]);
+    pc+=2;
+}
+
+void doDUP() {
+    pc++;
+}
+
+void doERR() {
+    pc++;
+}
+
+void doGOTO() {
+    pc+=5;
+}
+
+void doHALT() {
+    pc++;
+}
+
+void doIADD() {
+    pc++;
+}
+
+void doIAND() {
+    pc++;
+}
+
+void doIFEQ() {
+    pc+=5;
+}
+
+void doIFLT() {
+    pc+=5;
+}
+
+void doICMPEQ() {
+    pc+=5;
+}
+
+void doIINC() {
+    pc+=3;
+}
+
+void doILOAD() {
+    pc+=2;
+}
+
+void doIN() {
+    pc++;
+}
+
+void doINVOKEVIRTUAL() {
+    pc+=5;
+}
+
+void doIOR() {
+    pc++;
+}
+
+void doIRETURN() {
+    pc++;
+}
+
+void doISTORE() {
+    pc+=2;
+}
+
+void doISUB() {
+    pc++;
+}
+
+void doLDC_W() {
+    pc+=5;
+}
+
+void doNOP() {
+    pc++;
+}
+
+void doOUT() {
+    pc++;
+}
+
+void doPOP() {
+    pc++;
+}
+
+void doSWAP() {
+    pc++;
+}
+
+void doWIDE() {
+    pc++;
 }
 
 bool step() {
     switch (get_instruction()) {
         case OP_BIPUSH:
-            printf("%s", "BIPUSH\n");
+            doBIPUSH();
             break;
         case OP_DUP:
             printf("%s", "DUP\n");
+            doDUP();
             break;
         case OP_ERR:
             printf("%s", "ERR\n");
+            doERR();
             break;
         case OP_GOTO:
             printf("%s", "GOTO\n");
+            doGOTO();
             break;
         case OP_HALT:
             printf("%s", "HALT\n");
+            doHALT();
             break;
         case OP_IADD:
             printf("%s", "IADD\n");
+            doIADD();
             break;
         case OP_IAND:
             printf("%s", "IAND\n");
+            doIAND();
             break;
         case OP_IFEQ:
             printf("%s", "IFEQ\n");
+            doIFEQ();
             break;
         case OP_IFLT:
             printf("%s", "IFLT\n");
+            doIFLT();
             break;
         case OP_ICMPEQ:
             printf("%s", "IF_ICMPEQ\n");
+            doICMPEQ();
             break;
         case OP_IINC:
             printf("%s", "IINC\n");
+            doIINC();
             break;
         case OP_ILOAD:
             printf("%s", "ILOAD\n");
+            doILOAD();
             break;
         case OP_IN:
             printf("%s", "IN\n");
+            doIN();
             break;
         case OP_INVOKEVIRTUAL:
             printf("%s", "INVOKEVIRTUAL\n");
+            doINVOKEVIRTUAL();
             break;
         case OP_IOR:
             printf("%s", "IOR\n");
+            doIOR();
             break;
         case OP_IRETURN:
             printf("%s", "IRETURN\n");
+            doIRETURN();
             break;
         case OP_ISTORE:
             printf("%s", "ISTORE\n");
+            doISTORE();
             break;
         case OP_ISUB:
             printf("%s", "ISUB\n");
+            doISUB();
             break;
         case OP_LDC_W:
             printf("%s", "LDC_W\n");
+            doLDC_W();
             break;
         case OP_NOP:
             printf("%s", "NOP\n");
+            doNOP();
             break;
         case OP_OUT:
             printf("%s", "OUT\n");
+            doOUT();
             break;
         case OP_POP:
             printf("%s", "POP\n");
+            doPOP();
             break;
         case OP_SWAP:
             printf("%s", "SWAP\n");
+            doSWAP();
             break;
         case OP_WIDE:
             printf("%s", "WIDE\n");
+            doWIDE();
             break;
     }
-    if (pc < text_size() - 1) {
-        pc += 1;
+    if (pc < text_size()) {
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 byte_t *get_text() {
