@@ -40,8 +40,7 @@ void set_output(FILE *fp) {
 }
 
 void doBIPUSH() {
-    push((int8_t) buffer->text[pc + 1]);
-    printf("%s 0x%x %i\n", "BIPUSH", (int8_t) buffer->text[pc + 1], (int8_t) buffer->text[pc + 1]);
+    push(buffer->text[pc + 1]);
     pc+=2;
 }
 
@@ -62,10 +61,20 @@ void doHALT() {
 }
 
 void doIADD() {
+    word_t A = tos();
+    pop();
+    word_t B = tos();
+    pop();
+    push(A + B);
     pc++;
 }
 
 void doIAND() {
+    word_t A = tos();
+    pop();
+    word_t B = tos();
+    pop();
+    push(A & B);
     pc++;
 }
 
@@ -98,6 +107,11 @@ void doINVOKEVIRTUAL() {
 }
 
 void doIOR() {
+    word_t A = tos();
+    pop();
+    word_t B = tos();
+    pop();
+    push(A | B);
     pc++;
 }
 
@@ -110,6 +124,11 @@ void doISTORE() {
 }
 
 void doISUB() {
+    word_t A = tos();
+    pop();
+    word_t B = tos();
+    pop();
+    push(B - A);
     pc++;
 }
 
@@ -126,10 +145,17 @@ void doOUT() {
 }
 
 void doPOP() {
+    pop();
     pc++;
 }
 
 void doSWAP() {
+    word_t A = tos();
+    pop();
+    word_t B = tos();
+    pop();
+    push(A);
+    push(B);
     pc++;
 }
 
