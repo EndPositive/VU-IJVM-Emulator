@@ -15,6 +15,8 @@ void destroy_stack(void);
 
 int push(word_t data);
 
-int pop();
+int pop(void);
+
+int print_stack(FILE *fp);
 
 #endif

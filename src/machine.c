@@ -2,6 +2,7 @@
 #include <binary.h>
 #include <stack.h>
 #include <stdlib.h>
+#include <util.h>
 
 int pc;
 buffer_t *buffer;

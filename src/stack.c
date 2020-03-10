@@ -1,5 +1,7 @@
 #include <stack.h>
 #include <ijvm.h>
+#include <util.h>
+#include <string.h>
 #include <stdlib.h>
 
 stack_t *stack;
@@ -45,4 +47,10 @@ word_t *get_stack() {
 
 int stack_size() {
     return stack->size + 1;
+}
+
+int print_stack(FILE *fp) {
+    byte_t buff[stack->size];
+    memcpy(buff, (byte_t *) &stack->data[0], stack->size + 1);
+    return print_hex(buff, stack->size + 1, fp);
 }

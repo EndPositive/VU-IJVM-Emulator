@@ -1,5 +1,6 @@
 #ifndef UTIL_H
 #define UTIL_H
+#include <ijvm.h>
 
 /* debug print */
 #ifdef DEBUG
@@ -9,5 +10,7 @@
 #else
 #define dprintf(...)
 #endif
+
+int print_hex(byte_t *data, int length, FILE *fp);
 
 #endif
