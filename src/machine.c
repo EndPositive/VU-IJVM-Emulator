@@ -11,9 +11,9 @@ FILE *in;
 int init_ijvm(char *binary_file) {
     pc = 0;
     buffer = (buffer_t *)malloc(sizeof(buffer_t));
-    if (!parse(buffer, binary_file)) return -1;
+    if (parse(buffer, binary_file) < 0) return -1;
 
-    if (!init_stack(1000)) return -1;
+    if (init_stack(1000) < 0) return -1;
 
     return 1;
 }
