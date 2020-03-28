@@ -16,6 +16,8 @@ int init_ijvm(char *binary_file) {
 
     if (init_stack(1000) < 0) return -1;
 
+    set_output(stderr);
+
     return 1;
 }
 
@@ -46,6 +48,8 @@ void doBIPUSH() {
 }
 
 void doDUP() {
+    word_t A = tos();
+    push(A);
     pc++;
 }
 
@@ -54,10 +58,11 @@ void doERR() {
 }
 
 void doGOTO() {
-    pc+=5;
+    pc += to_short(buffer->text[pc + 1], buffer->text[pc + 2]);;
 }
 
 void doHALT() {
+    fprintf(out, "\n");
     pc++;
 }
 
@@ -80,15 +85,35 @@ void doIAND() {
 }
 
 void doIFEQ() {
-    pc+=5;
+    word_t A = tos();
+    pop();
+    if (A == 0) {
+        pc += to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+    } else {
+        pc+=3;
+    }
 }
 
 void doIFLT() {
-    pc+=5;
+    word_t A = tos();
+    pop();
+    if (A < 0) {
+        pc += to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+    } else {
+        pc+=3;
+    }
 }
 
 void doICMPEQ() {
-    pc+=5;
+    word_t A = tos();
+    pop();
+    word_t B = tos();
+    pop();
+    if (A == B) {
+        pc += to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+    } else {
+        pc+=3;
+    }
 }
 
 void doIINC() {
@@ -142,6 +167,9 @@ void doNOP() {
 }
 
 void doOUT() {
+    word_t A = tos();
+    pop();
+    fprintf(out, "%i ", A);
     pc++;
 }
 
@@ -170,7 +198,6 @@ bool step() {
             doBIPUSH();
             break;
         case OP_DUP:
-            printf("%s", "DUP\n");
             doDUP();
             break;
         case OP_ERR:
@@ -178,15 +205,12 @@ bool step() {
             doERR();
             break;
         case OP_GOTO:
-            printf("%s", "GOTO\n");
             doGOTO();
             break;
         case OP_HALT:
-            printf("%s", "HALT\n");
             doHALT();
             break;
         case OP_IADD:
-            printf("%s", "IADD\n");
             doIADD();
             break;
         case OP_IAND:
@@ -194,15 +218,12 @@ bool step() {
             doIAND();
             break;
         case OP_IFEQ:
-            printf("%s", "IFEQ\n");
             doIFEQ();
             break;
         case OP_IFLT:
-            printf("%s", "IFLT\n");
             doIFLT();
             break;
         case OP_ICMPEQ:
-            printf("%s", "IF_ICMPEQ\n");
             doICMPEQ();
             break;
         case OP_IINC:
@@ -234,7 +255,6 @@ bool step() {
             doISTORE();
             break;
         case OP_ISUB:
-            printf("%s", "ISUB\n");
             doISUB();
             break;
         case OP_LDC_W:
@@ -246,7 +266,6 @@ bool step() {
             doNOP();
             break;
         case OP_OUT:
-            printf("%s", "OUT\n");
             doOUT();
             break;
         case OP_POP:

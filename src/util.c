@@ -14,3 +14,7 @@ int print_hex(byte_t *data, int length, FILE *fp) {
     fprintf(fp, "\n");
     return 1;
 }
+
+short to_short(word_t A, word_t B) {
+    return (A << 8) | B;
+}
