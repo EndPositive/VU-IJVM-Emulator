@@ -1,5 +1,6 @@
 #include <ijvm.h>
 #include <binary.h>
+#include <frame.h>
 #include <stack.h>
 #include <stdlib.h>
 #include <util.h>
@@ -8,21 +9,28 @@ int pc;
 buffer_t *buffer;
 FILE *out;
 FILE *in;
+frame_t *frame;
 
 int init_ijvm(char *binary_file) {
     pc = 0;
     buffer = (buffer_t *)malloc(sizeof(buffer_t));
-    if (parse(buffer, binary_file) < 0) return -1;
+    if (init_buffer(buffer, binary_file) < 0) return -1;
 
     if (init_stack(1000) < 0) return -1;
 
     set_output(stderr);
+
+    frame = (frame_t *)malloc(sizeof(frame_t));
+    if (init_frame(frame, NULL) < 0) return -1;
 
     return 1;
 }
 
 void destroy_ijvm() {
     destroy_stack();
+
+    free(frame->data);
+    free(frame);
 
     free(buffer->data);
     free(buffer->constants);
@@ -62,7 +70,6 @@ void doGOTO() {
 }
 
 void doHALT() {
-    fprintf(out, "\n");
     pc++;
 }
 
@@ -117,10 +124,15 @@ void doICMPEQ() {
 }
 
 void doIINC() {
+    int offset = buffer->text[pc + 1];
+    byte_t constant = (char) buffer->text[pc + 2];
+    frame->data[offset] += constant;
     pc+=3;
 }
 
 void doILOAD() {
+    int offset = buffer->text[pc + 1];
+    push(frame->data[offset]);
     pc+=2;
 }
 
@@ -146,6 +158,10 @@ void doIRETURN() {
 }
 
 void doISTORE() {
+    int offset = buffer->text[pc + 1];
+    word_t A = tos();
+    pop();
+    frame->data[offset] = A;
     pc+=2;
 }
 
@@ -159,7 +175,8 @@ void doISUB() {
 }
 
 void doLDC_W() {
-    pc+=5;
+    push(get_constant(to_short(buffer->text[pc + 1], buffer->text[pc + 2])));
+    pc+=3;
 }
 
 void doNOP() {
@@ -169,7 +186,7 @@ void doNOP() {
 void doOUT() {
     word_t A = tos();
     pop();
-    fprintf(out, "%i ", A);
+    fprintf(out, "%c", A);
     pc++;
 }
 
@@ -227,11 +244,9 @@ bool step() {
             doICMPEQ();
             break;
         case OP_IINC:
-            printf("%s", "IINC\n");
             doIINC();
             break;
         case OP_ILOAD:
-            printf("%s", "ILOAD\n");
             doILOAD();
             break;
         case OP_IN:
@@ -251,14 +266,12 @@ bool step() {
             doIRETURN();
             break;
         case OP_ISTORE:
-            printf("%s", "ISTORE\n");
             doISTORE();
             break;
         case OP_ISUB:
             doISUB();
             break;
         case OP_LDC_W:
-            printf("%s", "LDC_W\n");
             doLDC_W();
             break;
         case OP_NOP:
@@ -269,7 +282,6 @@ bool step() {
             doOUT();
             break;
         case OP_POP:
-            printf("%s", "POP\n");
             doPOP();
             break;
         case OP_SWAP:
@@ -301,4 +313,12 @@ byte_t get_instruction() {
 
 int text_size() {
     return buffer->text_size;
+}
+
+word_t get_local_variable(int i) {
+    return (int8_t) frame->data[i];
+}
+
+word_t get_constant(int i) {
+    return buffer->constants[i];
 }

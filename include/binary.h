@@ -29,11 +29,11 @@ int get_blocks(buffer_t *buffer);
 int check_magic(word_t *data);
 
 /**
- * @param buffer to parse into
- * @param binary_file path to binary (.ijvm) file to parse
+ * @param buffer to init_buffer into
+ * @param binary_file path to binary (.ijvm) file to init_buffer
  * Returns  0 on success
  *         -1 on failure
  **/
-int parse(buffer_t *buffer, char *binary_file);
+int init_buffer(buffer_t *buffer, char *binary_file);
 
 #endif

@@ -33,7 +33,7 @@ int check_magic(word_t *data) {
     return  1;
 }
 
-int parse(buffer_t *buffer, char *binary_file) {
+int init_buffer(buffer_t *buffer, char *binary_file) {
     // Open file
     FILE *fp = fopen(binary_file, "rb");
     if (fp == NULL) return -1;
