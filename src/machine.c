@@ -14,7 +14,7 @@ int init_ijvm(char *binary_file) {
     buffer = (buffer_t *)malloc(sizeof(buffer_t));
     if (init_buffer(buffer, binary_file) < 0) return -1;
 
-    if (init_frame(NULL, 1000) < 0) return -1;
+    if (init_frame(NULL, 1000, 0) < 0) return -1;
 
     set_output(stderr);
 
@@ -135,7 +135,11 @@ void doIN() {
 }
 
 void doINVOKEVIRTUAL() {
-    pc+=5;
+    int const_offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+    int routine_offset = buffer->constants[const_offset];
+    int max_local_size = to_short(buffer->text[routine_offset + 2], buffer->text[routine_offset + 3]);
+    init_frame(frame, 10000, max_local_size, pc + 3);
+    pc = routine_offset + 4;
 }
 
 void doIOR() {
@@ -148,7 +152,8 @@ void doIOR() {
 }
 
 void doIRETURN() {
-    pc++;
+    pc = frame->prev_pc;
+    destroy_frame();
 }
 
 void doISTORE() {

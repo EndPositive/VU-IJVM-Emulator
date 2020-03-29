@@ -6,15 +6,17 @@
 
 
 
-int init_frame(frame_t *prev, int max_size) {
+int init_frame(frame_t *prev, int max_stack_size, int max_local_size, int pc) {
     frame_t *new_frame = (frame_t *)malloc(sizeof(frame_t));
 
-    new_frame->local_data = (word_t *)malloc(10000);
+    new_frame->local_data = (word_t *)malloc(max_local_size);
     new_frame->prev_frame = prev;
 
-    new_frame->max_stack_size = max_size;
+    new_frame->max_stack_size = max_stack_size;
     new_frame->stack_size = -1;
     new_frame->stack_data = (word_t *)malloc(new_frame->max_stack_size * sizeof(word_t));
+
+    new_frame->prev_pc = pc;
 
     frame = new_frame;
 
