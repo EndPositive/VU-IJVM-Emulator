@@ -3,15 +3,20 @@
 
 #include <ijvm.h>
 
-typedef struct stack {
-    int max_size;
-    int size;
-    word_t *data;
-} stack_t;
+typedef struct frame {
+    int local_size;
+    word_t *local_data;
+    struct frame *prev_frame;
+    int max_stack_size;
+    int stack_size;
+    word_t *stack_data;
+} frame_t;
 
-int init_stack(int max_size);
+frame_t *frame;
 
-void destroy_stack(void);
+int init_frame(frame_t *prev, int max_size);
+
+void destroy_frame(void);
 
 int push(word_t data);
 

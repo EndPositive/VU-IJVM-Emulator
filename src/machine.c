@@ -1,6 +1,5 @@
 #include <ijvm.h>
 #include <binary.h>
-#include <frame.h>
 #include <stack.h>
 #include <stdlib.h>
 #include <util.h>
@@ -9,28 +8,23 @@ int pc;
 buffer_t *buffer;
 FILE *out;
 FILE *in;
-frame_t *frame;
 
 int init_ijvm(char *binary_file) {
     pc = 0;
     buffer = (buffer_t *)malloc(sizeof(buffer_t));
     if (init_buffer(buffer, binary_file) < 0) return -1;
 
-    if (init_stack(1000) < 0) return -1;
+    if (init_frame(NULL, 1000) < 0) return -1;
 
     set_output(stderr);
-
-    frame = (frame_t *)malloc(sizeof(frame_t));
-    if (init_frame(frame, NULL) < 0) return -1;
 
     return 1;
 }
 
 void destroy_ijvm() {
-    destroy_stack();
-
-    free(frame->data);
-    free(frame);
+    while (frame != NULL) {
+        destroy_frame();
+    }
 
     free(buffer->data);
     free(buffer->constants);
@@ -126,13 +120,13 @@ void doICMPEQ() {
 void doIINC() {
     int offset = buffer->text[pc + 1];
     byte_t constant = (char) buffer->text[pc + 2];
-    frame->data[offset] += constant;
+    frame->local_data[offset] += constant;
     pc+=3;
 }
 
 void doILOAD() {
     int offset = buffer->text[pc + 1];
-    push(frame->data[offset]);
+    push(frame->local_data[offset]);
     pc+=2;
 }
 
@@ -161,7 +155,7 @@ void doISTORE() {
     int offset = buffer->text[pc + 1];
     word_t A = tos();
     pop();
-    frame->data[offset] = A;
+    frame->local_data[offset] = A;
     pc+=2;
 }
 
@@ -316,7 +310,7 @@ int text_size() {
 }
 
 word_t get_local_variable(int i) {
-    return (int8_t) frame->data[i];
+    return (int8_t) frame->local_data[i];
 }
 
 word_t get_constant(int i) {

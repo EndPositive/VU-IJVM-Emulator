@@ -4,53 +4,63 @@
 #include <string.h>
 #include <stdlib.h>
 
-stack_t *stack;
 
-int init_stack(int max_size) {
-    stack = (stack_t *)malloc(sizeof(stack_t));
-    stack->max_size = max_size;
-    stack->size = -1;
-    stack->data = (word_t *)malloc(stack->max_size * sizeof(word_t));
+
+int init_frame(frame_t *prev, int max_size) {
+    frame_t *new_frame = (frame_t *)malloc(sizeof(frame_t));
+
+    new_frame->local_data = (word_t *)malloc(10000);
+    new_frame->prev_frame = prev;
+
+    new_frame->max_stack_size = max_size;
+    new_frame->stack_size = -1;
+    new_frame->stack_data = (word_t *)malloc(new_frame->max_stack_size * sizeof(word_t));
+
+    frame = new_frame;
+
     return 1;
 }
 
-void destroy_stack() {
-    free(stack->data);
-    free(stack);
+void destroy_frame() {
+    frame_t *prev = frame->prev_frame;
+    free(frame->local_data);
+    free(frame->stack_data);
+    free(frame);
+    frame = prev;
 }
 
 int push(word_t data) {
-    if (stack->size < stack->max_size) {
-        stack->size++;
-        stack->data[stack->size] = data;
+    if (frame->stack_size < frame->max_stack_size) {
+        frame->stack_size++;
+        frame->stack_data[frame->stack_size] = data;
         return 1;
     }
     return -1;
 }
 
 int pop() {
-    if (stack->size > -1) {
-        stack->data[stack->size] = 0;
-        stack->size--;
+    if (frame->stack_size > -1) {
+        frame->stack_data[frame->stack_size] = 0;
+        frame->stack_size--;
         return 1;
     }
     return -1;
 }
 
 word_t tos() {
-    return (int8_t) stack->data[stack->size];
+    return (int8_t) frame->stack_data[frame->stack_size];
 }
 
 word_t *get_stack() {
-    return stack->data;
+    return frame->stack_data;
 }
 
 int stack_size() {
-    return stack->size + 1;
+    return frame->stack_size + 1;
 }
 
 int print_stack(FILE *fp) {
-    byte_t buff[stack->size];
-    memcpy(buff, (byte_t *) &stack->data[0], stack->size + 1);
-    return print_hex(buff, stack->size + 1, fp);
+    byte_t buff[frame->stack_size];
+    memcpy(buff, (byte_t *) &frame->stack_data[0], frame->stack_size + 1);
+    return print_hex(buff, frame->stack_size + 1, fp);
 }
