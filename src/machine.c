@@ -138,6 +138,7 @@ void doINVOKEVIRTUAL() {
     int const_offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
     int routine_offset = buffer->constants[const_offset];
     int max_local_size = to_short(buffer->text[routine_offset + 2], buffer->text[routine_offset + 3]);
+    int n_args = to_short(buffer->text[routine_offset], buffer->text[routine_offset + 1]);
     init_frame(frame, 10000, max_local_size, pc + 3);
     pc = routine_offset + 4;
 }

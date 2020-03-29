@@ -6,7 +6,7 @@
 
 
 
-int init_frame(frame_t *prev, int max_stack_size, int max_local_size, int pc) {
+int init_frame(frame_t *prev, int max_stack_size, int max_local_size, int pc, int n_args) {
     frame_t *new_frame = (frame_t *)malloc(sizeof(frame_t));
 
     new_frame->local_data = (word_t *)malloc(max_local_size);
@@ -24,11 +24,19 @@ int init_frame(frame_t *prev, int max_stack_size, int max_local_size, int pc) {
 }
 
 void destroy_frame() {
+    word_t tos_back = tos();
+    int n_args = frame->n_args;
+
     frame_t *prev = frame->prev_frame;
     free(frame->local_data);
     free(frame->stack_data);
     free(frame);
     frame = prev;
+
+    for (int i = 0; i < n_args; ++i) {
+        pop();
+    }
+    push(tos_back);
 }
 
 int push(word_t data) {

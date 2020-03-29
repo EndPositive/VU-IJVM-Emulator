@@ -11,11 +11,12 @@ typedef struct frame {
     int stack_size;
     word_t *stack_data;
     int prev_pc;
+    int n_args;
 } frame_t;
 
 frame_t *frame;
 
-int init_frame(frame_t *prev, int max_stack_size, int max_local_size, int pc);
+int init_frame(frame_t *prev, int max_stack_size, int max_local_size, int pc, int n_args);
 
 void destroy_frame(void);
 
