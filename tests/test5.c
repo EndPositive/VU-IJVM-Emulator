@@ -15,7 +15,9 @@ void test_invokenoargs()
     steps(2);
     assert(tos() == 0x43);
 
+    fprintf(stderr, "B");
     destroy_ijvm();
+    fprintf(stderr, "A");
 }
 
 void test_invoke1()

@@ -14,7 +14,7 @@ int init_ijvm(char *binary_file) {
     buffer = (buffer_t *)malloc(sizeof(buffer_t));
     if (init_buffer(buffer, binary_file) < 0) return -1;
 
-    if (init_frame(NULL, 1000, 0) < 0) return -1;
+    if (init_frame(NULL, 1000, 1000, 0, 0) < 0) return -1;
 
     set_output(stderr);
 
@@ -23,6 +23,7 @@ int init_ijvm(char *binary_file) {
 
 void destroy_ijvm() {
     while (frame != NULL) {
+        fprintf(out, "1");
         destroy_frame();
     }
 
@@ -45,8 +46,10 @@ void set_output(FILE *fp) {
 }
 
 void doBIPUSH() {
+    fprintf(out, "S_BIPUSH\n");
     push(buffer->text[pc + 1]);
     pc+=2;
+    fprintf(out, "E_BIPUSH\n");
 }
 
 void doDUP() {
@@ -135,12 +138,14 @@ void doIN() {
 }
 
 void doINVOKEVIRTUAL() {
+    fprintf(out, "S_INVOKE\n");
     int const_offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
     int routine_offset = buffer->constants[const_offset];
     int max_local_size = to_short(buffer->text[routine_offset + 2], buffer->text[routine_offset + 3]);
     int n_args = to_short(buffer->text[routine_offset], buffer->text[routine_offset + 1]);
-    init_frame(frame, 10000, max_local_size, pc + 3);
+    init_frame(frame, 10000, max_local_size, pc + 3, n_args);
     pc = routine_offset + 4;
+    fprintf(out, "E_INVOKE\n");
 }
 
 void doIOR() {
@@ -254,7 +259,6 @@ bool step() {
             doIN();
             break;
         case OP_INVOKEVIRTUAL:
-            printf("%s", "INVOKEVIRTUAL\n");
             doINVOKEVIRTUAL();
             break;
         case OP_IOR:
@@ -262,7 +266,6 @@ bool step() {
             doIOR();
             break;
         case OP_IRETURN:
-            printf("%s", "IRETURN\n");
             doIRETURN();
             break;
         case OP_ISTORE:
