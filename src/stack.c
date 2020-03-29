@@ -28,13 +28,16 @@ int init_frame(frame_t *prev, int max_stack_size, int max_local_size, int pc, in
 void destroy_frame() {
     word_t tos_back = tos();
     int n_args = frame->n_args;
-    fprintf(stderr, "%i", n_args);
 
     frame_t *prev = frame->prev_frame;
     free(frame->local_data);
     free(frame->stack_data);
     free(frame);
     frame = prev;
+
+    if (frame == NULL) {
+        return;
+    }
 
     for (int i = 0; i < n_args; ++i) {
         pop();

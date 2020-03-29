@@ -67,7 +67,9 @@ void doGOTO() {
 }
 
 void doHALT() {
+    fprintf(out, "S_HALT");
     pc++;
+    fprintf(out, "E_HALT");
 }
 
 void doIADD() {
@@ -158,8 +160,10 @@ void doIOR() {
 }
 
 void doIRETURN() {
+    fprintf(stderr, "S_IRETURN\n");
     pc = frame->prev_pc;
     destroy_frame();
+    fprintf(stderr, "E_IRETURN\n");
 }
 
 void doISTORE() {
