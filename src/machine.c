@@ -23,7 +23,6 @@ int init_ijvm(char *binary_file) {
 
 void destroy_ijvm() {
     while (frame != NULL) {
-        fprintf(out, "1");
         destroy_frame();
     }
 
@@ -46,10 +45,8 @@ void set_output(FILE *fp) {
 }
 
 void doBIPUSH() {
-    fprintf(out, "S_BIPUSH\n");
     push(buffer->text[pc + 1]);
     pc+=2;
-    fprintf(out, "E_BIPUSH\n");
 }
 
 void doDUP() {
@@ -67,9 +64,7 @@ void doGOTO() {
 }
 
 void doHALT() {
-    fprintf(out, "S_HALT");
     pc++;
-    fprintf(out, "E_HALT");
 }
 
 void doIADD() {
@@ -140,14 +135,19 @@ void doIN() {
 }
 
 void doINVOKEVIRTUAL() {
-    fprintf(out, "S_INVOKE\n");
     int const_offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
     int routine_offset = buffer->constants[const_offset];
     int max_local_size = to_short(buffer->text[routine_offset + 2], buffer->text[routine_offset + 3]);
     int n_args = to_short(buffer->text[routine_offset], buffer->text[routine_offset + 1]);
+    word_t *arguments = frame->stack_data + frame->stack_size - n_args + 1;
     init_frame(frame, 10000, max_local_size, pc + 3, n_args);
+
+    // push the arguments onto the new frame's local data
+    for (int i = 0; i < n_args; ++i) {
+        frame->local_data[i] = arguments[i];
+    }
+
     pc = routine_offset + 4;
-    fprintf(out, "E_INVOKE\n");
 }
 
 void doIOR() {
@@ -160,10 +160,8 @@ void doIOR() {
 }
 
 void doIRETURN() {
-    fprintf(stderr, "S_IRETURN\n");
     pc = frame->prev_pc;
     destroy_frame();
-    fprintf(stderr, "E_IRETURN\n");
 }
 
 void doISTORE() {
@@ -193,9 +191,7 @@ void doNOP() {
 }
 
 void doOUT() {
-    word_t A = tos();
     pop();
-    fprintf(out, "%c", A);
     pc++;
 }
 
