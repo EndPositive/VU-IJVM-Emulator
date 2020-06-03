@@ -56,7 +56,8 @@ void doDUP() {
 }
 
 void doERR() {
-    pc++;
+    fprintf(out, "Error message... HALT");
+    pc = text_size();
 }
 
 void doGOTO() {
@@ -64,7 +65,7 @@ void doGOTO() {
 }
 
 void doHALT() {
-    pc++;
+    pc = text_size();
 }
 
 void doIADD() {
@@ -131,6 +132,12 @@ void doILOAD() {
 }
 
 void doIN() {
+    word_t input = fgetc(in);
+    if (input == EOF) {
+        push((word_t) 0);
+    } else {
+        push(input);
+    }
     pc++;
 }
 
@@ -191,7 +198,9 @@ void doNOP() {
 }
 
 void doOUT() {
+    word_t A = tos();
     pop();
+    fprintf(out, "%c", A);
     pc++;
 }
 
@@ -223,7 +232,6 @@ bool step() {
             doDUP();
             break;
         case OP_ERR:
-            printf("%s", "ERR\n");
             doERR();
             break;
         case OP_GOTO:
@@ -236,7 +244,6 @@ bool step() {
             doIADD();
             break;
         case OP_IAND:
-            printf("%s", "IAND\n");
             doIAND();
             break;
         case OP_IFEQ:
@@ -255,14 +262,12 @@ bool step() {
             doILOAD();
             break;
         case OP_IN:
-            printf("%s", "IN\n");
             doIN();
             break;
         case OP_INVOKEVIRTUAL:
             doINVOKEVIRTUAL();
             break;
         case OP_IOR:
-            printf("%s", "IOR\n");
             doIOR();
             break;
         case OP_IRETURN:
@@ -278,7 +283,6 @@ bool step() {
             doLDC_W();
             break;
         case OP_NOP:
-            printf("%s", "NOP\n");
             doNOP();
             break;
         case OP_OUT:
@@ -288,11 +292,9 @@ bool step() {
             doPOP();
             break;
         case OP_SWAP:
-            printf("%s", "SWAP\n");
             doSWAP();
             break;
         case OP_WIDE:
-            printf("%s", "WIDE\n");
             doWIDE();
             break;
     }

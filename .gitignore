@@ -51,10 +51,10 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-/.idea/
+.idea/
 *
 !/**/
 !*.*
-/cmake-build-debug/
-/CMakeLists.txt
-/obj/
+cmake-build-debug/
+CMakeLists.txt
+obj/
