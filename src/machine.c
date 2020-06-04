@@ -142,10 +142,10 @@ void doIN() {
 }
 
 void doINVOKEVIRTUAL() {
-    int const_offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+    short const_offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
     int routine_offset = buffer->constants[const_offset];
-    int max_local_size = to_short(buffer->text[routine_offset + 2], buffer->text[routine_offset + 3]);
-    int n_args = to_short(buffer->text[routine_offset], buffer->text[routine_offset + 1]);
+    unsigned short max_local_size = to_short(buffer->text[routine_offset + 2], buffer->text[routine_offset + 3]);
+    short n_args = to_short(buffer->text[routine_offset], buffer->text[routine_offset + 1]);
     word_t *arguments = frame->stack_data + frame->stack_size - n_args + 1;
     init_frame(frame, 10000, max_local_size, pc + 3, n_args);
 
@@ -219,8 +219,43 @@ void doSWAP() {
     pc++;
 }
 
+void doIINCWIDE() {
+    unsigned short offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+    byte_t constant = (char) buffer->text[pc + 3];
+    frame->local_data[offset] += constant;
+    pc+=4;
+}
+
+void doILOADWIDE() {
+    unsigned short offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+    push(frame->local_data[offset]);
+    pc+=3;
+}
+
+void doISTOREWIDE() {
+    unsigned short offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+    word_t A = tos();
+    pop();
+    frame->local_data[offset] = A;
+    pc+=3;
+}
+
 void doWIDE() {
     pc++;
+    byte_t instruction = get_instruction();
+    switch (instruction) {
+        case OP_IINC:
+            doIINCWIDE();
+            break;
+        case OP_ILOAD:
+            doILOADWIDE();
+            break;
+        case OP_ISTORE:
+            doISTOREWIDE();
+            break;
+        default:
+            doERR();
+    }
 }
 
 bool step() {
@@ -297,6 +332,8 @@ bool step() {
         case OP_WIDE:
             doWIDE();
             break;
+        default:
+            doERR();
     }
     if (pc < text_size()) {
         return true;
