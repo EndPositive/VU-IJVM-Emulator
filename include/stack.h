@@ -16,7 +16,7 @@ typedef struct frame {
 
 frame_t *frame;
 
-int init_frame(frame_t *prev, int max_stack_size, unsigned short max_local_size, int pc, short n_args);
+int init_frame(frame_t *prev, int max_stack_size, unsigned short max_local_size, int pc, unsigned short n_args);
 
 void destroy_frame(void);
 

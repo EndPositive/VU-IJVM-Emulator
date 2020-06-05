@@ -14,7 +14,7 @@ int init_ijvm(char *binary_file) {
     buffer = (buffer_t *)malloc(sizeof(buffer_t));
     if (init_buffer(buffer, binary_file) < 0) return -1;
 
-    if (init_frame(NULL, 1000, 1000, 0, 0) < 0) return -1;
+    if (init_frame(NULL, 1000000, 1000, 0, 0) < 0) return -1;
 
     set_output(stderr);
 
@@ -45,7 +45,8 @@ void set_output(FILE *fp) {
 }
 
 void doBIPUSH() {
-    push(buffer->text[pc + 1]);
+    int8_t value = buffer->text[pc + 1];
+    push(value);
     pc+=2;
 }
 
@@ -119,22 +120,22 @@ void doICMPEQ() {
 }
 
 void doIINC() {
-    int offset = buffer->text[pc + 1];
-    byte_t constant = (char) buffer->text[pc + 2];
-    frame->local_data[offset] += constant;
+    byte_t index = buffer->text[pc + 1];
+    int8_t constant = buffer->text[pc + 2];
+    frame->local_data[index] += constant;
     pc+=3;
 }
 
 void doILOAD() {
-    int offset = buffer->text[pc + 1];
-    push(frame->local_data[offset]);
+    byte_t index = buffer->text[pc + 1];
+    push(get_local_variable(index));
     pc+=2;
 }
 
 void doIN() {
     word_t input = fgetc(in);
     if (input == EOF) {
-        push((word_t) 0);
+        push( 0);
     } else {
         push(input);
     }
@@ -142,12 +143,12 @@ void doIN() {
 }
 
 void doINVOKEVIRTUAL() {
-    short const_offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+    unsigned short const_offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
     int routine_offset = buffer->constants[const_offset];
     unsigned short max_local_size = to_short(buffer->text[routine_offset + 2], buffer->text[routine_offset + 3]);
-    short n_args = to_short(buffer->text[routine_offset], buffer->text[routine_offset + 1]);
+    unsigned short n_args = to_short(buffer->text[routine_offset], buffer->text[routine_offset + 1]);
     word_t *arguments = frame->stack_data + frame->stack_size - n_args + 1;
-    init_frame(frame, 10000, max_local_size, pc + 3, n_args);
+    init_frame(frame, 1000000, max_local_size, pc + 3, n_args);
 
     // push the arguments onto the new frame's local data
     for (int i = 0; i < n_args; ++i) {
@@ -172,7 +173,7 @@ void doIRETURN() {
 }
 
 void doISTORE() {
-    int offset = buffer->text[pc + 1];
+    byte_t offset = buffer->text[pc + 1];
     word_t A = tos();
     pop();
     frame->local_data[offset] = A;
@@ -358,7 +359,7 @@ int text_size() {
 }
 
 word_t get_local_variable(int i) {
-    return (int8_t) frame->local_data[i];
+    return frame->local_data[i];
 }
 
 word_t get_constant(int i) {
