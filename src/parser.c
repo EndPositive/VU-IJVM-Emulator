@@ -1,16 +1,15 @@
 #include <ijvm.h>
-#include <binary.h>
+#include <parser.h>
 #include <string.h>
 #include <stdlib.h>
+#include <util.h>
 
-static uint32_t swap_uint32(uint32_t num) {
-    return ((num >> 24) & 0xff) | ((num << 8) & 0xff0000) | ((num >> 8) & 0xff00) | ((num << 24) & 0xff000000);
-}
+buffer_t *buffer;
 
-int get_blocks(buffer_t *buffer) {
+int get_blocks() {
     // Parse constants
     buffer->constant_pos = swap_uint32(buffer->data[1]);
-    buffer->constant_size = swap_uint32(buffer->data[2] / 4);
+    buffer->constant_size = swap_uint32(buffer->data[2]) / 4;
     buffer->constants = (word_t *) malloc(buffer->constant_size * 4);
     for (int i = 0; i < buffer->constant_size; i++) {
         buffer->constants[i] = swap_uint32(buffer->data[3 + i]);
@@ -33,7 +32,9 @@ int check_magic(word_t *data) {
     return  1;
 }
 
-int init_buffer(buffer_t *buffer, char *binary_file) {
+int init_buffer(char *binary_file) {
+    buffer = (buffer_t *)malloc(sizeof(buffer_t));
+
     // Open file
     FILE *fp = fopen(binary_file, "rb");
     if (fp == NULL) return -1;
@@ -41,7 +42,7 @@ int init_buffer(buffer_t *buffer, char *binary_file) {
     // Get file length
     fseek(fp, 0, SEEK_END);
     buffer->data_size = (int)ftell(fp);
-    buffer->data = (word_t *)malloc(buffer->data_size);
+    buffer->data = (word_t *)malloc(buffer->data_size * sizeof(word_t));
     fseek(fp, 0, SEEK_SET);
 
     // Copy file into buffer
@@ -55,4 +56,23 @@ int init_buffer(buffer_t *buffer, char *binary_file) {
     if (!get_blocks(buffer)) return -1;
 
     return 1;
+}
+
+void destroy_buffer() {
+    free(buffer->data);
+    free(buffer->constants);
+    free(buffer->text);
+    free(buffer);
+}
+
+byte_t *get_text() {
+    return buffer->text;
+}
+
+int text_size() {
+    return buffer->text_size;
+}
+
+word_t get_constant(int i) {
+    return buffer->constants[i];
 }

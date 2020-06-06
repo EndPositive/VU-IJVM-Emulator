@@ -15,6 +15,13 @@ int print_hex(byte_t *data, int length, FILE *fp) {
     return 1;
 }
 
-short to_short(word_t A, word_t B) {
+short read_short(int i) {
+    word_t A = get_text()[i];
+    word_t B = get_text()[i + 1];
     return (A << 8) | B;
 }
+
+uint32_t swap_uint32(uint32_t num) {
+    return ((num >> 24) & 0xff) | ((num << 8) & 0xff0000) | ((num >> 8) & 0xff00) | ((num << 24) & 0xff000000);
+}
+

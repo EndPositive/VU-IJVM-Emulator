@@ -1,20 +1,19 @@
 #include <ijvm.h>
-#include <binary.h>
-#include <stack.h>
+#include <parser.h>
+#include <frame.h>
 #include <stdlib.h>
 #include <util.h>
 
 int pc;
-buffer_t *buffer;
 FILE *out;
 FILE *in;
+bool isfinished = false;
 
 int init_ijvm(char *binary_file) {
     pc = 0;
-    buffer = (buffer_t *)malloc(sizeof(buffer_t));
-    if (init_buffer(buffer, binary_file) < 0) return -1;
+    if (init_buffer(binary_file) < 0) return -1;
 
-    if (init_frame(NULL, 1000000, 1000, 0, 0) < 0) return -1;
+    if (init_frame(NULL, 0, 0, 0) < 0) return -1;
 
     set_output(stderr);
 
@@ -25,11 +24,7 @@ void destroy_ijvm() {
     while (frame != NULL) {
         destroy_frame();
     }
-
-    free(buffer->data);
-    free(buffer->constants);
-    free(buffer->text);
-    free(buffer);
+    destroy_buffer();
 }
 
 void run() {
@@ -45,7 +40,7 @@ void set_output(FILE *fp) {
 }
 
 void doBIPUSH() {
-    int8_t value = buffer->text[pc + 1];
+    int8_t value = get_text()[pc + 1];
     push(value);
     pc+=2;
 }
@@ -62,7 +57,7 @@ void doERR() {
 }
 
 void doGOTO() {
-    pc += to_short(buffer->text[pc + 1], buffer->text[pc + 2]);;
+    pc += read_short(pc + 1);
 }
 
 void doHALT() {
@@ -91,7 +86,7 @@ void doIFEQ() {
     word_t A = tos();
     pop();
     if (A == 0) {
-        pc += to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+        pc += read_short(pc + 1);
     } else {
         pc+=3;
     }
@@ -101,7 +96,7 @@ void doIFLT() {
     word_t A = tos();
     pop();
     if (A < 0) {
-        pc += to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+        pc += read_short(pc + 1);
     } else {
         pc+=3;
     }
@@ -113,21 +108,21 @@ void doICMPEQ() {
     word_t B = tos();
     pop();
     if (A == B) {
-        pc += to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+        pc += read_short(pc + 1);
     } else {
         pc+=3;
     }
 }
 
 void doIINC() {
-    byte_t index = buffer->text[pc + 1];
-    int8_t constant = buffer->text[pc + 2];
-    frame->local_data[index] += constant;
+    byte_t index = get_text()[pc + 1];
+    int8_t constant = get_text()[pc + 2];
+    set_local_variable(index, get_local_variable(index) + constant);
     pc+=3;
 }
 
 void doILOAD() {
-    byte_t index = buffer->text[pc + 1];
+    byte_t index = get_text()[pc + 1];
     push(get_local_variable(index));
     pc+=2;
 }
@@ -143,16 +138,16 @@ void doIN() {
 }
 
 void doINVOKEVIRTUAL() {
-    unsigned short const_offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
-    int routine_offset = buffer->constants[const_offset];
-    unsigned short max_local_size = to_short(buffer->text[routine_offset + 2], buffer->text[routine_offset + 3]);
-    unsigned short n_args = to_short(buffer->text[routine_offset], buffer->text[routine_offset + 1]);
-    word_t *arguments = frame->stack_data + frame->stack_size - n_args + 1;
-    init_frame(frame, 1000000, max_local_size, pc + 3, n_args);
+    unsigned short const_offset = read_short(pc + 1);
+    int routine_offset = get_constant(const_offset);
+    unsigned short n_args = read_short(routine_offset) - 1;
+    unsigned short local_size = read_short(routine_offset + 2);
+    word_t *arguments = frame->stack_data + frame->stack_size - n_args;
+    init_frame(frame, local_size + n_args + 1, pc + 3, n_args);
 
     // push the arguments onto the new frame's local data
     for (int i = 0; i < n_args; ++i) {
-        frame->local_data[i] = arguments[i];
+        frame->local_data[i + 1] = arguments[i];
     }
 
     pc = routine_offset + 4;
@@ -169,14 +164,30 @@ void doIOR() {
 
 void doIRETURN() {
     pc = frame->prev_pc;
-    destroy_frame();
+    word_t return_value = tos();
+    int n_args = frame->n_args;
+
+    frame_t *prev = frame->prev_frame;
+    free(frame->local_data);
+    free(frame->stack_data);
+    free(frame);
+    frame = prev;
+
+    if (frame == NULL) {
+        return;
+    }
+
+    for (int i = 0; i < n_args + 1; ++i) {
+        pop();
+    }
+    push(return_value);
 }
 
 void doISTORE() {
-    byte_t offset = buffer->text[pc + 1];
+    byte_t offset = get_text()[pc + 1];
     word_t A = tos();
     pop();
-    frame->local_data[offset] = A;
+    set_local_variable(offset, A);
     pc+=2;
 }
 
@@ -190,7 +201,7 @@ void doISUB() {
 }
 
 void doLDC_W() {
-    push(get_constant(to_short(buffer->text[pc + 1], buffer->text[pc + 2])));
+    push(get_constant(read_short(pc + 1)));
     pc+=3;
 }
 
@@ -221,30 +232,29 @@ void doSWAP() {
 }
 
 void doIINCWIDE() {
-    unsigned short offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
-    byte_t constant = (char) buffer->text[pc + 3];
-    frame->local_data[offset] += constant;
+    unsigned short index = read_short(pc + 1);
+    byte_t constant = get_text()[pc + 3];
+    set_local_variable(index, get_local_variable(index) + constant);
     pc+=4;
 }
 
 void doILOADWIDE() {
-    unsigned short offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
-    push(frame->local_data[offset]);
+    unsigned short index = read_short(pc + 1);
+    push(get_local_variable(index));
     pc+=3;
 }
 
 void doISTOREWIDE() {
-    unsigned short offset = to_short(buffer->text[pc + 1], buffer->text[pc + 2]);
+    unsigned short index = read_short(pc + 1);
     word_t A = tos();
     pop();
-    frame->local_data[offset] = A;
+    set_local_variable(index, A);
     pc+=3;
 }
 
 void doWIDE() {
     pc++;
-    byte_t instruction = get_instruction();
-    switch (instruction) {
+    switch (get_instruction()) {
         case OP_IINC:
             doIINCWIDE();
             break;
@@ -337,13 +347,10 @@ bool step() {
             doERR();
     }
     if (pc < text_size()) {
+        isfinished = true;
         return true;
     }
     return false;
-}
-
-byte_t *get_text() {
-    return buffer->text;
 }
 
 int get_program_counter() {
@@ -351,17 +358,9 @@ int get_program_counter() {
 }
 
 byte_t get_instruction() {
-    return buffer->text[pc];
+    return get_text()[pc];
 }
 
-int text_size() {
-    return buffer->text_size;
-}
-
-word_t get_local_variable(int i) {
-    return frame->local_data[i];
-}
-
-word_t get_constant(int i) {
-    return buffer->constants[i];
+bool finished() {
+    return isfinished;
 }

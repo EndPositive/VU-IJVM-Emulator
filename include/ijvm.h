@@ -83,6 +83,11 @@ int get_program_counter(void);
  **/
 word_t get_local_variable(int i);
 
+/**
+ * @param i, index of variable to obtain.
+ * @return Returns the i:th local variable of the current frame.
+ **/
+void set_local_variable(int i, word_t value);
 
 /**
  * @param i, index of the constant to obtain
