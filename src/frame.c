@@ -59,8 +59,8 @@ word_t get_local_variable(int i) {
 }
 
 void set_local_variable(int i, word_t value) {
-    if (frame->local_size < i) {
-        frame->local_size = i;
+    if (i >= frame->local_size) {
+        frame->local_size = i + 1;
         frame->local_data = (word_t *)realloc(frame->local_data, frame->local_size * sizeof(word_t));
     }
     frame->local_data[i] = value;

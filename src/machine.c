@@ -31,14 +31,6 @@ void run() {
     while (step());
 }
 
-void set_input(FILE *fp) {
-    in = fp;
-}
-
-void set_output(FILE *fp) {
-    out = fp;
-}
-
 void doBIPUSH() {
     int8_t value = get_text()[pc + 1];
     push(value);
@@ -363,4 +355,12 @@ byte_t get_instruction() {
 
 bool finished() {
     return isfinished;
+}
+
+void set_input(FILE *fp) {
+    in = fp;
+}
+
+void set_output(FILE *fp) {
+    out = fp;
 }

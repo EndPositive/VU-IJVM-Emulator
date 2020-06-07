@@ -53,7 +53,7 @@ int init_buffer(char *binary_file) {
     if (!check_magic(buffer->data)) return -1;
 
     // Load data blocks;
-    if (!get_blocks(buffer)) return -1;
+    if (!get_blocks()) return -1;
 
     return 1;
 }
