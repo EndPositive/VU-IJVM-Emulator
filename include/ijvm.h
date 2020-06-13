@@ -33,6 +33,9 @@ typedef int32_t word_t; /* the basic unit of the ijvm will be an int32 */
 #define OP_POP            ((byte_t) 0x57)
 #define OP_SWAP           ((byte_t) 0x5F)
 #define OP_WIDE           ((byte_t) 0xC4)
+#define OP_NEWARRAY       ((byte_t) 0xD1)
+#define OP_IALOAD         ((byte_t) 0xD2)
+#define OP_IASTORE        ((byte_t) 0xD3)
 
 /**
  * DO NOT MODIFY THIS FILE.

@@ -3,8 +3,7 @@
 #include <util.h>
 #include <string.h>
 #include <stdlib.h>
-
-
+#include <heap.h>
 
 int init_frame(frame_t *prev, unsigned short local_size, int pc, unsigned short n_args) {
     frame_t *new_frame = (frame_t *)malloc(sizeof(frame_t));

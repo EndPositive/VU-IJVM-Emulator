@@ -1,5 +1,5 @@
-#ifndef BINARY_H
-#define BINARY_H
+#ifndef PARSER_H
+#define PARSER_H
 
 #include <ijvm.h>
 

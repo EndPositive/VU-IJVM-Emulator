@@ -3,6 +3,7 @@
 #include <frame.h>
 #include <stdlib.h>
 #include <util.h>
+#include <heap.h>
 
 int pc;
 FILE *out;
@@ -15,6 +16,8 @@ int init_ijvm(char *binary_file) {
 
     if (init_frame(NULL, 0, 0, 0) < 0) return -1;
 
+    if (init_arrays() < 0) return -1;
+
     set_output(stderr);
 
     return 1;
@@ -24,6 +27,7 @@ void destroy_ijvm() {
     while (frame != NULL) {
         destroy_frame();
     }
+    destroy_arrays();
     destroy_buffer();
 }
 
@@ -261,6 +265,54 @@ void doWIDE() {
     }
 }
 
+void doNEWARRAY() {
+    int count = tos();
+    pop();
+    word_t array_ref = new_array(count);
+    push(array_ref);
+    pc+=1;
+}
+
+void doIALOAD() {
+    word_t ref = tos();
+    pop();
+    array_t *array = get_array(ref);
+    if (array == NULL) {
+        fprintf(stderr, "UNKNOWN IALOAD ARRAY REF");
+        doERR();
+    } else {
+        unsigned short index = tos();
+        pop();
+        if (index > array->size) {
+            doERR();
+            return;
+        }
+        push(array->data[index]);
+        pc+=1;
+    }
+}
+
+void doIASTORE() {
+    word_t ref = tos();
+    array_t *array = get_array(ref);
+    if (array == NULL) {
+        fprintf(stderr, "UNKNOWN IASTORE ARRAY REF");
+        doERR();
+    } else {
+        pop();
+        unsigned short index = tos();
+        pop();
+        word_t value = tos();
+        pop();
+        if (index > array->size) {
+            doERR();
+            return;
+        }
+        array->data[index] = value;
+        pc+=1;
+    }
+}
+
 bool step() {
     switch (get_instruction()) {
         case OP_BIPUSH:
@@ -334,6 +386,15 @@ bool step() {
             break;
         case OP_WIDE:
             doWIDE();
+            break;
+        case OP_NEWARRAY:
+            doNEWARRAY();
+            break;
+        case OP_IALOAD:
+            doIALOAD();
+            break;
+        case OP_IASTORE:
+            doIASTORE();
             break;
         default:
             doERR();

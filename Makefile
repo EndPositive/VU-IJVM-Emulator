@@ -38,10 +38,11 @@ clean:
 	-rm -f $(ODIR)/*.o *~ core.* $(INCDIR)/*~
 	-rm -f $(ODIR)/*.d
 	-rm -f ijvm
-	-rm -f test1 test2 test3 test4 test5 testadvanced*
+	-rm -f test1 test2 test3 test4 test5 testadvanced* testbonusheap
 	-rm -f dist.tar.gz
 	-rm -rf profdata/
 	-rm -rf obj/ *.dSYM
+	-rm -f tmp_output
 
 tools:
 	make -C tools/
@@ -69,7 +70,7 @@ run_test%: test%
 testbasic: run_test1 run_test2 run_test3 run_test4 run_test5
 testadvanced: run_testadvanced1 run_testadvanced2 run_testadvanced3 run_testadvanced4 run_testadvanced5 run_testadvanced6 run_testadvanced7 run_testadvancedstack
 testall: testbasic testadvanced
-build_tests: test1 test2 test3 test4 test5 testadvanced1 testadvanced2 testadvanced3 testadvanced4 testadvanced5 testadvanced6 testadvanced7 testadvancedstack
+build_tests: test1 test2 test3 test4 test5 testadvanced1 testadvanced2 testadvanced3 testadvanced4 testadvanced5 testadvanced6 testadvanced7 testadvancedstack testbonusheap
 
 # Uses LLVM sanitizers
 testasan: CC=clang
@@ -99,6 +100,7 @@ testleaks: build_tests
 	valgrind --leak-check=full ./testadvanced5
 	valgrind --leak-check=full ./testadvanced6
 	valgrind --leak-check=full ./testadvancedstack
+	valgrind --leak-check=full ./testbonusheap
 
 coverage: CFLAGS+=-fprofile-instr-generate -fcoverage-mapping
 coverage: CC=clang
