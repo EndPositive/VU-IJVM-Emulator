@@ -43,10 +43,11 @@ int push(word_t data) {
     return 1;
 }
 
-int pop() {
+word_t pop() {
+    word_t top = tos();
     frame->stack_size--;
     frame->stack_data = (word_t *)realloc(frame->stack_data, frame->stack_size * sizeof(word_t));
-    return 1;
+    return top;
 }
 
 word_t tos() {

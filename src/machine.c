@@ -61,26 +61,21 @@ void doHALT() {
 }
 
 void doIADD() {
-    word_t A = tos();
-    pop();
-    word_t B = tos();
-    pop();
+    word_t A = pop();
+    word_t B = pop();
     push(A + B);
     pc++;
 }
 
 void doIAND() {
-    word_t A = tos();
-    pop();
-    word_t B = tos();
-    pop();
+    word_t A = pop();
+    word_t B = pop();
     push(A & B);
     pc++;
 }
 
 void doIFEQ() {
-    word_t A = tos();
-    pop();
+    word_t A = pop();
     if (A == 0) {
         pc += read_short(pc + 1);
     } else {
@@ -89,8 +84,7 @@ void doIFEQ() {
 }
 
 void doIFLT() {
-    word_t A = tos();
-    pop();
+    word_t A = pop();
     if (A < 0) {
         pc += read_short(pc + 1);
     } else {
@@ -99,10 +93,8 @@ void doIFLT() {
 }
 
 void doICMPEQ() {
-    word_t A = tos();
-    pop();
-    word_t B = tos();
-    pop();
+    word_t A = pop();
+    word_t B = pop();
     if (A == B) {
         pc += read_short(pc + 1);
     } else {
@@ -150,10 +142,8 @@ void doINVOKEVIRTUAL() {
 }
 
 void doIOR() {
-    word_t A = tos();
-    pop();
-    word_t B = tos();
-    pop();
+    word_t A = pop();
+    word_t B = pop();
     push(A | B);
     pc++;
 }
@@ -181,17 +171,14 @@ void doIRETURN() {
 
 void doISTORE() {
     byte_t offset = get_text()[pc + 1];
-    word_t A = tos();
-    pop();
+    word_t A = pop();
     set_local_variable(offset, A);
     pc+=2;
 }
 
 void doISUB() {
-    word_t A = tos();
-    pop();
-    word_t B = tos();
-    pop();
+    word_t A = pop();
+    word_t B = pop();
     push(B - A);
     pc++;
 }
@@ -206,8 +193,7 @@ void doNOP() {
 }
 
 void doOUT() {
-    word_t A = tos();
-    pop();
+    word_t A = pop();
     fprintf(out, "%c", A);
     pc++;
 }
@@ -218,10 +204,8 @@ void doPOP() {
 }
 
 void doSWAP() {
-    word_t A = tos();
-    pop();
-    word_t B = tos();
-    pop();
+    word_t A = pop();
+    word_t B = pop();
     push(A);
     push(B);
     pc++;
@@ -242,8 +226,7 @@ void doILOADWIDE() {
 
 void doISTOREWIDE() {
     unsigned short index = read_short(pc + 1);
-    word_t A = tos();
-    pop();
+    word_t A = pop();
     set_local_variable(index, A);
     pc+=3;
 }
@@ -266,23 +249,20 @@ void doWIDE() {
 }
 
 void doNEWARRAY() {
-    int count = tos();
-    pop();
+    int count = pop();
     word_t array_ref = new_array(count);
     push(array_ref);
     pc+=1;
 }
 
 void doIALOAD() {
-    word_t ref = tos();
-    pop();
+    word_t ref = pop();
     array_t *array = get_array(ref);
     if (array == NULL) {
         fprintf(stderr, "UNKNOWN IALOAD ARRAY REF");
         doERR();
     } else {
-        unsigned short index = tos();
-        pop();
+        unsigned short index = pop();
         if (index > array->size) {
             doERR();
             return;
@@ -293,17 +273,14 @@ void doIALOAD() {
 }
 
 void doIASTORE() {
-    word_t ref = tos();
+    word_t ref = pop();
     array_t *array = get_array(ref);
     if (array == NULL) {
         fprintf(stderr, "UNKNOWN IASTORE ARRAY REF");
         doERR();
     } else {
-        pop();
-        unsigned short index = tos();
-        pop();
-        word_t value = tos();
-        pop();
+        unsigned short index = pop();
+        word_t value = pop();
         if (index > array->size) {
             doERR();
             return;
