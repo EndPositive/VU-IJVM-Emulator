@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <util.h>
 #include <heap.h>
+#include <net.h>
 
 int pc;
 FILE *out;
@@ -296,6 +297,42 @@ void doGC() {
     pc++;
 }
 
+void doNETBIND() {
+    int port = pop();
+    word_t netref = net_bind(port);
+    push(netref);
+    pc++;
+}
+
+void doNETCONNECT() {
+    word_t port = pop();
+    word_t host = swap_uint32(pop());
+    word_t netref = net_connect(port, host);
+    push(netref);
+    pc++;
+}
+
+void doNETIN() {
+    word_t netref = pop();
+    word_t input = net_recv(netref);
+    if (input == -1) doERR();
+    else push(input);
+    pc++;
+}
+
+void doNETOUT() {
+    word_t output = pop();
+    word_t netref = pop();
+    if (net_send(netref, output) == -1) doERR();
+    pc++;
+}
+
+void doNETCLOSE() {
+    word_t netref = pop();
+    if (net_close(netref) == -1) doERR();
+    pc++;
+}
+
 bool step() {
     switch (get_instruction()) {
         case OP_BIPUSH:
@@ -381,6 +418,21 @@ bool step() {
             break;
         case OP_GC:
             doGC();
+            break;
+        case OP_NETBIND:
+            doNETBIND();
+            break;
+        case OP_NETCONNECT:
+            doNETCONNECT();
+            break;
+        case OP_NETIN:
+            doNETIN();
+            break;
+        case OP_NETOUT:
+            doNETOUT();
+            break;
+        case OP_NETCLOSE:
+            doNETCLOSE();
             break;
         default:
             doERR();
