@@ -167,6 +167,7 @@ void doIRETURN() {
         pop();
     }
     push(return_value);
+    detect_garbage();
 }
 
 void doISTORE() {
@@ -290,6 +291,11 @@ void doIASTORE() {
     }
 }
 
+void doGC() {
+    detect_garbage();
+    pc++;
+}
+
 bool step() {
     switch (get_instruction()) {
         case OP_BIPUSH:
@@ -372,6 +378,9 @@ bool step() {
             break;
         case OP_IASTORE:
             doIASTORE();
+            break;
+        case OP_GC:
+            doGC();
             break;
         default:
             doERR();
