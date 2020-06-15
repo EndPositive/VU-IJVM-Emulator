@@ -19,7 +19,7 @@ void destroy_arrays() {
         free(arrays->arrays[i]);
     }
 
-    if (arrays->size > 0) free(arrays->arrays);
+    free(arrays->arrays);
     free(arrays);
 }
 
