@@ -3,17 +3,16 @@
 #include <util.h>
 #include <string.h>
 #include <stdlib.h>
-#include <heap.h>
 
 int init_frame(frame_t *prev, unsigned short local_size, int pc, unsigned short n_args) {
     frame_t *new_frame = (frame_t *)malloc(sizeof(frame_t));
 
     new_frame->local_size = local_size;
-    new_frame->local_data = (word_t *)malloc(new_frame->local_size * sizeof(word_t));
+    new_frame->local_data = (word_t *)calloc(new_frame->local_size, sizeof(word_t));
     new_frame->prev_frame = prev;
 
     new_frame->stack_size = 0;
-    new_frame->stack_data = (word_t *)malloc(new_frame->stack_size * sizeof(word_t));
+    new_frame->stack_data = (word_t *)calloc(new_frame->stack_size, sizeof(word_t));
 
     new_frame->prev_pc = pc;
 
