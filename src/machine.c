@@ -5,6 +5,7 @@
 #include <util.h>
 #include <heap.h>
 #include <net.h>
+#include <machine.h>
 
 int pc;
 FILE *out;
@@ -37,7 +38,7 @@ void run() {
 }
 
 void doBIPUSH() {
-    int8_t value = get_text()[pc + 1];
+    int8_t value = (int8_t) get_text()[pc + 1];
     push(value);
     pc+=2;
 }
@@ -105,7 +106,7 @@ void doICMPEQ() {
 
 void doIINC() {
     byte_t index = get_text()[pc + 1];
-    int8_t constant = get_text()[pc + 2];
+    int8_t constant = (int8_t) get_text()[pc + 2];
     set_local_variable(index, get_local_variable(index) + constant);
     pc+=3;
 }
@@ -127,12 +128,12 @@ void doIN() {
 }
 
 void doINVOKEVIRTUAL() {
-    unsigned short const_offset = read_short(pc + 1);
-    int routine_offset = get_constant(const_offset);
-    unsigned short n_args = read_short(routine_offset) - 1;
-    unsigned short local_size = read_short(routine_offset + 2);
+    unsigned short pre_const_offset = read_unsigned_short(pc + 1);
+    int routine_offset = get_constant(pre_const_offset);
+    unsigned short n_args = (unsigned short) (read_unsigned_short(routine_offset) - 1);
+    unsigned short local_size = read_unsigned_short(routine_offset + 2);
     word_t *arguments = frame->stack_data + frame->stack_size - n_args;
-    init_frame(frame, local_size + n_args + 1, pc + 3, n_args);
+    init_frame(frame, (unsigned short) (local_size + n_args - 1), pc + 3, n_args);
 
     // push the arguments onto the new frame's local data
     for (int i = 0; i < n_args; ++i) {
@@ -150,11 +151,15 @@ void doIOR() {
 }
 
 void doIRETURN() {
-    pc = frame->prev_pc;
-    word_t return_value = tos();
-    int n_args = frame->n_args;
+    word_t return_value;
+    int n_args;
+    frame_t *prev;
 
-    frame_t *prev = frame->prev_frame;
+    pc = frame->prev_pc;
+    return_value = tos();
+    n_args = frame->n_args;
+
+    prev = frame->prev_frame;
     free(frame->local_data);
     free(frame->stack_data);
     free(frame);
@@ -214,20 +219,20 @@ void doSWAP() {
 }
 
 void doIINCWIDE() {
-    unsigned short index = read_short(pc + 1);
+    unsigned short index = read_unsigned_short(pc + 1);
     byte_t constant = get_text()[pc + 3];
     set_local_variable(index, get_local_variable(index) + constant);
     pc+=4;
 }
 
 void doILOADWIDE() {
-    unsigned short index = read_short(pc + 1);
+    unsigned short index = read_unsigned_short(pc + 1);
     push(get_local_variable(index));
     pc+=3;
 }
 
 void doISTOREWIDE() {
-    unsigned short index = read_short(pc + 1);
+    unsigned short index = read_unsigned_short(pc + 1);
     word_t A = pop();
     set_local_variable(index, A);
     pc+=3;
@@ -251,7 +256,7 @@ void doWIDE() {
 }
 
 void doNEWARRAY() {
-    int count = pop();
+    unsigned int count = (unsigned int) pop();
     word_t array_ref = new_array(count);
     push(array_ref);
     pc+=1;
@@ -264,7 +269,7 @@ void doIALOAD() {
         fprintf(stderr, "UNKNOWN IALOAD ARRAY REF");
         doERR();
     } else {
-        unsigned short index = pop();
+        unsigned short index = (unsigned short) pop();
         if (index > array->size) {
             doERR();
             return;
@@ -281,7 +286,7 @@ void doIASTORE() {
         fprintf(stderr, "UNKNOWN IASTORE ARRAY REF");
         doERR();
     } else {
-        unsigned short index = pop();
+        unsigned short index = (unsigned short) pop();
         word_t value = pop();
         if (index > array->size) {
             doERR();
@@ -306,7 +311,7 @@ void doNETBIND() {
 
 void doNETCONNECT() {
     word_t port = pop();
-    word_t host = swap_uint32(pop());
+    unsigned int host = swap_uint32((unsigned int) pop());
     word_t netref = net_connect(port, host);
     push(netref);
     pc++;
@@ -321,7 +326,7 @@ void doNETIN() {
 }
 
 void doNETOUT() {
-    word_t output = pop();
+    char output = (char) pop();
     word_t netref = pop();
     if (net_send(netref, output) == -1) doERR();
     pc++;

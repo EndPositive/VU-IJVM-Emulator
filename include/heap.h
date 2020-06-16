@@ -5,22 +5,22 @@
 #include "frame.h"
 
 typedef struct array {
-    int size;
+    unsigned int size;
     word_t *data;
     word_t ref;
     bool wipe;
 } array_t;
 
 typedef struct arrays {
-    int size;
+    unsigned int size;
     array_t **arrays;
 } arrays_t;
 
-int init_arrays();
+int init_arrays(void);
 
-void destroy_arrays();
+void destroy_arrays(void);
 
-word_t new_array(int size);
+word_t new_array(unsigned int size);
 
 array_t *get_array(word_t ref);
 

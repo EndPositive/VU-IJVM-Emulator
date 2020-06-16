@@ -11,8 +11,8 @@ int get_blocks() {
     buffer->constant_pos = swap_uint32(buffer->data[1]);
     buffer->constant_size = swap_uint32(buffer->data[2]) / 4;
     buffer->constants = (word_t *) malloc(buffer->constant_size * 4);
-    for (int i = 0; i < buffer->constant_size; i++) {
-        buffer->constants[i] = swap_uint32(buffer->data[3 + i]);
+    for (unsigned int i = 0; i < buffer->constant_size; i++) {
+        buffer->constants[i] = (word_t) swap_uint32(buffer->data[3 + i]);
     }
 
     // Parse instructions
@@ -23,7 +23,7 @@ int get_blocks() {
     return 1;
 }
 
-int check_magic(word_t *data) {
+int check_magic(unsigned int *data) {
     // Check magic number
     if (swap_uint32(data[0]) != MAGIC_NUMBER) {
         fprintf(stderr, "MAGIC NUMBERS DO NOT MATCH...");
@@ -33,20 +33,26 @@ int check_magic(word_t *data) {
 }
 
 int init_buffer(char *binary_file) {
+    FILE *fp;
+    long int data_size;
+    size_t ret;
+
     buffer = (buffer_t *)malloc(sizeof(buffer_t));
 
     // Open file
-    FILE *fp = fopen(binary_file, "rb");
+    fp = fopen(binary_file, "rb");
     if (fp == NULL) return -1;
 
     // Get file length
     fseek(fp, 0, SEEK_END);
-    buffer->data_size = (int)ftell(fp);
-    buffer->data = (word_t *)malloc(buffer->data_size * sizeof(word_t));
+    data_size = ftell(fp);
+    if (data_size == -1) return -1;
+    buffer->data_size = (unsigned int) data_size;
+    buffer->data = (unsigned int*)malloc(buffer->data_size * sizeof(unsigned int));
     fseek(fp, 0, SEEK_SET);
 
     // Copy file into buffer
-    size_t ret = fread(buffer->data, sizeof(word_t), buffer->data_size, fp);
+    ret = fread(buffer->data, sizeof(unsigned int), buffer->data_size, fp);
     if (ret <= 0) return -1;
 
     // Check magic number
@@ -70,7 +76,7 @@ byte_t *get_text() {
 }
 
 int text_size() {
-    return buffer->text_size;
+    return (int) buffer->text_size;
 }
 
 word_t get_constant(int i) {

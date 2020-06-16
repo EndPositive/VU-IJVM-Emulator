@@ -6,7 +6,7 @@
 arrays_t *arrays;
 
 int init_arrays() {
-    srand(time(NULL));
+    srand( (unsigned int) time(NULL));
     arrays = (arrays_t *)malloc(sizeof(arrays_t));
     arrays->size = 0;
     arrays->arrays = (array_t **)malloc(sizeof(array_t*));
@@ -14,7 +14,7 @@ int init_arrays() {
 }
 
 void destroy_arrays() {
-    for (int i = 0; i < arrays->size; i++) {
+    for (unsigned int i = 0; i < arrays->size; i++) {
         free(arrays->arrays[i]->data);
         free(arrays->arrays[i]);
     }
@@ -23,13 +23,12 @@ void destroy_arrays() {
     free(arrays);
 }
 
-word_t new_array(int size) {
-    arrays->size++;
-    arrays->arrays = (array_t **)realloc(arrays->arrays, (arrays->size + 1) * sizeof(array_t*));
-
+word_t new_array(unsigned int size) {
     array_t *array = (array_t *)malloc(size * sizeof(array_t));
-    arrays->arrays[arrays->size - 1] = array;
 
+    arrays->size++;
+    arrays->arrays = (array_t **)realloc(arrays->arrays, (unsigned int) (arrays->size + 1) * sizeof(array_t*));
+    arrays->arrays[arrays->size - 1] = array;
     array->size = size;
     array->data = (word_t *)malloc(size * sizeof(word_t));
     array->ref = rand();
@@ -37,7 +36,7 @@ word_t new_array(int size) {
 }
 
 array_t *get_array(word_t ref) {
-    for (word_t i = 0; i < arrays->size; i++) {
+    for (unsigned int i = 0; i < arrays->size; i++) {
         if (arrays->arrays[i]->ref == ref) return arrays->arrays[i];
     }
     return NULL;
@@ -47,7 +46,7 @@ void detect_garbage() {
     arrays_t *new_arrays = (arrays_t *)malloc(sizeof(arrays_t));
     new_arrays->size = 0;
 
-    for (int i = 0; i < arrays->size; i++) {
+    for (unsigned int i = 0; i < arrays->size; i++) {
         if (find_array_in_frame(frame, arrays->arrays[i])) {
             new_arrays->size++;
             arrays->arrays[i]->wipe = false;
@@ -57,7 +56,7 @@ void detect_garbage() {
     if (new_arrays->size > 0) {
         new_arrays->arrays = (array_t **)malloc(new_arrays->size * sizeof(array_t*));
         new_arrays->size = 0;
-        for (int i = 0; i < arrays->size; i++) {
+        for (unsigned int i = 0; i < arrays->size; i++) {
             if (!arrays->arrays[i]->wipe) {
                 new_arrays->size++;
                 new_arrays->arrays[new_arrays->size - 1] = arrays->arrays[i];

@@ -4,10 +4,10 @@
 #include <ijvm.h>
 
 typedef struct frame {
-    int local_size;
+    unsigned short local_size;
     word_t *local_data;
     struct frame *prev_frame;
-    int stack_size;
+    unsigned short stack_size;
     word_t *stack_data;
     int prev_pc;
     int n_args;

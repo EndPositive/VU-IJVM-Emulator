@@ -6,9 +6,9 @@
 
 word_t net_bind(int port);
 
-word_t net_connect(int port, int host);
+word_t net_connect(int port, unsigned int host);
 
-word_t net_recv(word_t netref);
+char net_recv(word_t netref);
 
 int net_send(word_t netref, char output);
 

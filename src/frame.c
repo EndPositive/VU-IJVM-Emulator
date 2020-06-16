@@ -57,9 +57,9 @@ word_t get_local_variable(int i) {
     return frame->local_data[i];
 }
 
-void set_local_variable(int i, word_t value) {
+void set_local_variable(unsigned short i, word_t value) {
     if (i >= frame->local_size) {
-        frame->local_size = i + 1;
+        frame->local_size = (unsigned short) (i + 1);
         frame->local_data = (word_t *)realloc(frame->local_data, frame->local_size * sizeof(word_t));
     }
     frame->local_data[i] = value;
@@ -75,6 +75,6 @@ int stack_size() {
 
 int print_stack(FILE *fp) {
     byte_t buff[frame->stack_size];
-    memcpy(buff, (byte_t *) &frame->stack_data[0], frame->stack_size + 1);
+    memcpy(buff, (byte_t *) &frame->stack_data[0], (unsigned long) (frame->stack_size + 1));
     return print_hex(buff, frame->stack_size + 1, fp);
 }

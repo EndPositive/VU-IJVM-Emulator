@@ -96,7 +96,7 @@ word_t get_local_variable(int i);
  * @param i, index of variable to obtain.
  * @return Returns the i:th local variable of the current frame.
  **/
-void set_local_variable(int i, word_t value);
+void set_local_variable(unsigned short i, word_t value);
 
 /**
  * @param i, index of the constant to obtain
@@ -149,6 +149,10 @@ void set_output(FILE *f);
  **/
 void set_input(FILE *f);
 
+/**
+ * Print help text if incorrect usage
+ **/
+void print_help(void);
 
 /**
  * Initializes the IJVM with the binary file found at the provided argument
