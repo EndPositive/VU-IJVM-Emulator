@@ -49,9 +49,10 @@ void doDUP() {
     pc++;
 }
 
-void doERR() {
-    fprintf(out, "Error message... HALT");
-    pc = text_size();
+void doERR(char *msg) {
+    fprintf(out, "%s, quitting...", msg);
+    destroy_ijvm();
+    exit(1);
 }
 
 void doGOTO() {
@@ -249,7 +250,7 @@ void doWIDE() {
             doISTOREWIDE();
             break;
         default:
-            doERR();
+            doERR("Unknown OP code after WIDE");
     }
 }
 
@@ -263,36 +264,25 @@ void doNEWARRAY() {
 void doIALOAD() {
     word_t ref = pop();
     array_t *array = get_array(ref);
-    if (array == NULL) {
-        fprintf(stderr, "UNKNOWN IALOAD ARRAY REF");
-        doERR();
-    } else {
-        unsigned short index = (unsigned short) pop();
-        if (index > array->size) {
-            doERR();
-            return;
-        }
-        push(array->data[index]);
-        pc+=1;
-    }
+    if (array == NULL) doERR("Unknown array ref");
+
+    unsigned short index = (unsigned short) pop();
+    if (index > array->size) doERR("Incorrect array index");
+    push(array->data[index]);
+    pc+=1;
 }
 
 void doIASTORE() {
     word_t ref = pop();
     array_t *array = get_array(ref);
-    if (array == NULL) {
-        fprintf(stderr, "UNKNOWN IASTORE ARRAY REF");
-        doERR();
-    } else {
-        unsigned short index = (unsigned short) pop();
-        word_t value = pop();
-        if (index > array->size) {
-            doERR();
-            return;
-        }
-        array->data[index] = value;
-        pc+=1;
-    }
+    if (array == NULL) doERR("Unknown array ref");
+
+    unsigned short index = (unsigned short) pop();
+    word_t value = pop();
+    if (index > array->size) doERR("Incorrect array index");
+
+    array->data[index] = value;
+    pc+=1;
 }
 
 void doGC() {
@@ -318,7 +308,7 @@ void doNETCONNECT() {
 void doNETIN() {
     word_t netref = pop();
     word_t input = net_recv(netref);
-    if (input == -1) doERR();
+    if (input == -1) doERR("Error while receiving");
     else push(input);
     pc++;
 }
@@ -326,13 +316,13 @@ void doNETIN() {
 void doNETOUT() {
     char output = (char) pop();
     word_t netref = pop();
-    if (net_send(netref, output) == -1) doERR();
+    if (net_send(netref, output) == -1) doERR("Error while sending");
     pc++;
 }
 
 void doNETCLOSE() {
     word_t netref = pop();
-    if (net_close(netref) == -1) doERR();
+    if (net_close(netref) == -1) doERR("Error while closing");
     pc++;
 }
 
@@ -345,7 +335,7 @@ bool step() {
             doDUP();
             break;
         case OP_ERR:
-            doERR();
+            doERR("Error OP code called");
             break;
         case OP_GOTO:
             doGOTO();
@@ -438,7 +428,7 @@ bool step() {
             doNETCLOSE();
             break;
         default:
-            doERR();
+            doERR("Unknown OP code");
     }
     if (pc < text_size()) {
         isfinished = true;

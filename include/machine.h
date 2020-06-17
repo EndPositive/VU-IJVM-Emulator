@@ -5,7 +5,7 @@ void doBIPUSH(void);
 
 void doDUP(void);
 
-void doERR(void);
+void doERR(char *string);
 
 void doGOTO(void);
 
