@@ -1,12 +1,15 @@
 #include <ijvm.h>
+#include <machine.h>
 #include <util.h>
 
 short read_short(int i) {
+    if (i >= text_size()) doERR("Reading text out of bounds");
     word_t A = get_text()[i];
     word_t B = get_text()[i + 1];
     return (short) (A << 8) | (short) B;
 }
 unsigned short read_unsigned_short(int i) {
+    if (i >= text_size()) doERR("Reading text out of bounds");
     word_t A = get_text()[i];
     word_t B = get_text()[i + 1];
     return (unsigned short) (A << 8) | (unsigned short) B;

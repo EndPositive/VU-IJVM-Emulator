@@ -104,6 +104,7 @@ void doICMPEQ() {
 }
 
 void doIINC() {
+    if (pc + 1 >= text_size()) doERR("Reading text out of bounds");
     byte_t index = get_text()[pc + 1];
     int8_t constant = (int8_t) get_text()[pc + 2];
     set_local_variable(index, get_local_variable(index) + constant);
@@ -111,6 +112,7 @@ void doIINC() {
 }
 
 void doILOAD() {
+    if (pc + 1 >= text_size()) doERR("Reading text out of bounds");
     byte_t index = get_text()[pc + 1];
     push(get_local_variable(index));
     pc+=2;
@@ -118,11 +120,8 @@ void doILOAD() {
 
 void doIN() {
     word_t input = fgetc(in);
-    if (input == EOF) {
-        push( 0);
-    } else {
-        push(input);
-    }
+    if (input == EOF) push( 0);
+    else push(input);
     pc++;
 }
 
@@ -165,15 +164,14 @@ void doIRETURN() {
     free(frame);
     frame = prev;
 
-    if (frame == NULL) {
-        return;
-    }
+    if (frame == NULL) return;
 
     push(return_value);
     detect_garbage();
 }
 
 void doISTORE() {
+    if (pc + 1 >= text_size()) doERR("Reading text out of bounds");
     byte_t offset = get_text()[pc + 1];
     word_t A = pop();
     set_local_variable(offset, A);
@@ -217,6 +215,7 @@ void doSWAP() {
 
 void doIINCWIDE() {
     unsigned short index = read_unsigned_short(pc + 1);
+    if (pc + 3 >= text_size()) doERR("Reading text out of bounds");
     byte_t constant = get_text()[pc + 3];
     set_local_variable(index, get_local_variable(index) + constant);
     pc+=4;
@@ -277,7 +276,7 @@ void doIASTORE() {
 
     unsigned short index = (unsigned short) pop();
     word_t value = pop();
-    if (index > array->size) doERR("Incorrect array index");
+    if (index > array->size) doERR("Array index out of bounds");
 
     array->data[index] = value;
     pc+=1;
@@ -440,6 +439,7 @@ int get_program_counter() {
 }
 
 byte_t get_instruction() {
+    // No bounds check necessary
     return get_text()[pc];
 }
 

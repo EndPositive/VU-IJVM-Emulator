@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <util.h>
+#include <machine.h>
 
 buffer_t *buffer;
 
@@ -110,5 +111,6 @@ int text_size() {
 }
 
 word_t get_constant(int i) {
+    if (i >= buffer->constant_size) doERR("Getting constant out of bounds");
     return buffer->constants[i];
 }

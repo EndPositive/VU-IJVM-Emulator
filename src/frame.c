@@ -43,6 +43,7 @@ int push(word_t data) {
 }
 
 word_t pop() {
+    if (frame->stack_size == 0) doERR("POP while stack is empty");
     word_t top = tos();
     frame->stack_size--;
     frame->stack_data = (word_t *)realloc(frame->stack_data, frame->stack_size * sizeof(word_t));
@@ -51,10 +52,12 @@ word_t pop() {
 }
 
 word_t tos() {
+    if (frame->stack_size == 0) doERR("TOS while stack is empty");
     return frame->stack_data[frame->stack_size - 1];
 }
 
 word_t get_local_variable(int i) {
+    if (i >= frame->local_size) doERR("Get local variable out of bounds");
     return frame->local_data[i];
 }
 
