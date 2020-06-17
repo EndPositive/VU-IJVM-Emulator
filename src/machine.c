@@ -26,9 +26,7 @@ int init_ijvm(char *binary_file) {
 }
 
 void destroy_ijvm() {
-    while (frame != NULL) {
-        destroy_frame();
-    }
+    while (frame != NULL) destroy_frame();
     destroy_arrays();
     destroy_buffer();
 }
