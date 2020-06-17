@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-
-
 word_t net_bind(int port) {
     struct sockaddr_in server;
 

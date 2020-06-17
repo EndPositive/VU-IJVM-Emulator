@@ -8,7 +8,6 @@ buffer_t *buffer;
 
 int get_blocks() {
     // Parse constants
-    buffer->constant_pos = swap_uint32(buffer->data[1]);
     buffer->constant_size = swap_uint32(buffer->data[2]) / 4;
     buffer->constants = (word_t *) malloc(buffer->constant_size * 4);
     for (unsigned int i = 0; i < buffer->constant_size; i++) {
@@ -16,7 +15,6 @@ int get_blocks() {
     }
 
     // Parse instructions
-    buffer->text_pos = swap_uint32(buffer->data[3 + buffer->constant_size]);
     buffer->text_size = swap_uint32(buffer->data[4 + buffer->constant_size]);
     buffer->text = (byte_t *) malloc(buffer->text_size);
     memcpy(buffer->text, (byte_t *) &buffer->data[5 + buffer->constant_size], buffer->text_size);

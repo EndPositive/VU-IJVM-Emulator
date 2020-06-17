@@ -27,7 +27,7 @@ word_t new_array(unsigned int size) {
     array_t *array = (array_t *)malloc(size * sizeof(array_t));
 
     arrays->size++;
-    arrays->arrays = (array_t **)realloc(arrays->arrays, (unsigned int) (arrays->size + 1) * sizeof(array_t*));
+    arrays->arrays = (array_t **)realloc(arrays->arrays, (arrays->size + 1) * sizeof(array_t*));
     arrays->arrays[arrays->size - 1] = array;
     array->size = size;
     array->data = (word_t *)malloc(size * sizeof(word_t));

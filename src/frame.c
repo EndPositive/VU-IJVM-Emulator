@@ -1,10 +1,7 @@
 #include <frame.h>
-#include <ijvm.h>
-#include <util.h>
-#include <string.h>
 #include <stdlib.h>
 
-int init_frame(frame_t *prev, unsigned short local_size, int pc, unsigned short n_args) {
+frame_t *init_frame(frame_t *prev, unsigned short local_size, int pc) {
     frame_t *new_frame = (frame_t *)malloc(sizeof(frame_t));
 
     new_frame->local_size = local_size;
@@ -12,15 +9,11 @@ int init_frame(frame_t *prev, unsigned short local_size, int pc, unsigned short 
     new_frame->prev_frame = prev;
 
     new_frame->stack_size = 0;
-    new_frame->stack_data = (word_t *)calloc(new_frame->stack_size, sizeof(word_t));
+    new_frame->stack_data = NULL;
 
     new_frame->prev_pc = pc;
 
-    new_frame->n_args = n_args;
-
-    frame = new_frame;
-
-    return 1;
+    return new_frame;
 }
 
 void destroy_frame() {
@@ -71,10 +64,4 @@ word_t *get_stack() {
 
 int stack_size() {
     return frame->stack_size;
-}
-
-int print_stack(FILE *fp) {
-    byte_t buff[frame->stack_size];
-    memcpy(buff, (byte_t *) &frame->stack_data[0], (unsigned long) (frame->stack_size + 1));
-    return print_hex(buff, frame->stack_size + 1, fp);
 }

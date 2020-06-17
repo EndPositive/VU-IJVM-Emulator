@@ -10,19 +10,16 @@ typedef struct frame {
     unsigned short stack_size;
     word_t *stack_data;
     int prev_pc;
-    int n_args;
 } frame_t;
 
 frame_t *frame;
 
-int init_frame(frame_t *prev, unsigned short, int pc, unsigned short n_args);
+frame_t *init_frame(frame_t *prev, unsigned short local_size, int pc);
 
 void destroy_frame(void);
 
 int push(word_t data);
 
 int pop(void);
-
-int print_stack(FILE *fp);
 
 #endif

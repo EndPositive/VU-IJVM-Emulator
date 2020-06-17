@@ -6,10 +6,8 @@
 typedef struct buffer {
     unsigned int data_size;
     unsigned int *data;
-    unsigned int constant_pos;
     unsigned int constant_size;
     word_t *constants;
-    unsigned int text_pos;
     unsigned int text_size;
     byte_t *text;
 } buffer_t;

@@ -16,7 +16,7 @@ int init_ijvm(char *binary_file) {
     pc = 0;
     if (init_buffer(binary_file) < 0) return -1;
 
-    if (init_frame(NULL, 0, 0, 0) < 0) return -1;
+    frame = init_frame(NULL, 0, 0);
 
     if (init_arrays() < 0) return -1;
 
@@ -65,7 +65,7 @@ void doHALT() {
 void doIADD() {
     word_t A = pop();
     word_t B = pop();
-    push(A + B);
+    push((word_t) ((unsigned)A + (unsigned) B));
     pc++;
 }
 
@@ -130,15 +130,18 @@ void doIN() {
 void doINVOKEVIRTUAL() {
     unsigned short pre_const_offset = read_unsigned_short(pc + 1);
     int routine_offset = get_constant(pre_const_offset);
-    unsigned short n_args = (unsigned short) (read_unsigned_short(routine_offset) - 1);
-    unsigned short local_size = read_unsigned_short(routine_offset + 2);
-    word_t *arguments = frame->stack_data + frame->stack_size - n_args;
-    init_frame(frame, (unsigned short) (local_size + n_args - 1), pc + 3, n_args);
+    unsigned short n_args = (unsigned short) read_unsigned_short(routine_offset);
+    unsigned short local_size = (unsigned short) (read_unsigned_short(routine_offset + 2) + n_args);
 
-    // push the arguments onto the new frame's local data
-    for (int i = 0; i < n_args; ++i) {
-        frame->local_data[i + 1] = arguments[i];
+    frame_t  *new_frame = init_frame(frame, local_size, pc + 3);
+
+    for (int i = n_args - 1; i > 0; i--) {
+        new_frame->local_data[i] = pop();
     }
+    //BYE OBJREF :(
+    pop();
+
+    frame = new_frame;
 
     pc = routine_offset + 4;
 }
@@ -152,12 +155,10 @@ void doIOR() {
 
 void doIRETURN() {
     word_t return_value;
-    int n_args;
     frame_t *prev;
 
     pc = frame->prev_pc;
     return_value = tos();
-    n_args = frame->n_args;
 
     prev = frame->prev_frame;
     free(frame->local_data);
@@ -169,9 +170,6 @@ void doIRETURN() {
         return;
     }
 
-    for (int i = 0; i < n_args + 1; ++i) {
-        pop();
-    }
     push(return_value);
     detect_garbage();
 }
