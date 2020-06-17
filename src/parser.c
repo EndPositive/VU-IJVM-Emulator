@@ -60,7 +60,7 @@ int init_buffer(char *binary_file) {
     // Get file length
     fseek(fp, 0, SEEK_END);
     buffer->data_size = (unsigned int) ftell(fp);
-    if (buffer->data_size == -1) return -1;
+    if (buffer->data_size == 0) return -1;
     buffer->data = (unsigned int*)malloc(buffer->data_size * sizeof(unsigned int));
     if (buffer->data == NULL) {
         destroy_buffer();
@@ -110,7 +110,7 @@ int text_size() {
     return (int) buffer->text_size;
 }
 
-word_t get_constant(int i) {
+word_t get_constant(unsigned int i) {
     if (i >= buffer->constant_size) doERR("Getting constant out of bounds");
     return buffer->constants[i];
 }

@@ -47,7 +47,7 @@ void doDUP() {
     pc++;
 }
 
-void doERR(char *msg) {
+void doERR(const char *msg) {
     fprintf(out, "%s, quitting...", msg);
     destroy_ijvm();
     exit(1);
@@ -104,16 +104,19 @@ void doICMPEQ() {
 }
 
 void doIINC() {
+    byte_t index;
+    int8_t constant;
     if (pc + 1 >= text_size()) doERR("Reading text out of bounds");
-    byte_t index = get_text()[pc + 1];
-    int8_t constant = (int8_t) get_text()[pc + 2];
+    index = get_text()[pc + 1];
+    constant = (int8_t) get_text()[pc + 2];
     set_local_variable(index, get_local_variable(index) + constant);
     pc+=3;
 }
 
 void doILOAD() {
+    byte_t index;
     if (pc + 1 >= text_size()) doERR("Reading text out of bounds");
-    byte_t index = get_text()[pc + 1];
+    index = get_text()[pc + 1];
     push(get_local_variable(index));
     pc+=2;
 }
@@ -154,7 +157,6 @@ void doIOR() {
 void doIRETURN() {
     word_t return_value;
     frame_t *prev;
-
     pc = frame->prev_pc;
     return_value = tos();
 
@@ -171,9 +173,11 @@ void doIRETURN() {
 }
 
 void doISTORE() {
+    byte_t offset;
+    word_t A;
     if (pc + 1 >= text_size()) doERR("Reading text out of bounds");
-    byte_t offset = get_text()[pc + 1];
-    word_t A = pop();
+    offset = get_text()[pc + 1];
+    A = pop();
     set_local_variable(offset, A);
     pc+=2;
 }
@@ -186,7 +190,7 @@ void doISUB() {
 }
 
 void doLDC_W() {
-    push(get_constant(read_short(pc + 1)));
+    push(get_constant(read_unsigned_short(pc + 1)));
     pc+=3;
 }
 
@@ -214,9 +218,10 @@ void doSWAP() {
 }
 
 void doIINCWIDE() {
+    byte_t constant;
     unsigned short index = read_unsigned_short(pc + 1);
     if (pc + 3 >= text_size()) doERR("Reading text out of bounds");
-    byte_t constant = get_text()[pc + 3];
+    constant = get_text()[pc + 3];
     set_local_variable(index, get_local_variable(index) + constant);
     pc+=4;
 }
@@ -259,23 +264,26 @@ void doNEWARRAY() {
 }
 
 void doIALOAD() {
+    unsigned short index;
     word_t ref = pop();
     array_t *array = get_array(ref);
     if (array == NULL) doERR("Unknown array ref");
 
-    unsigned short index = (unsigned short) pop();
+    index = (unsigned short) pop();
     if (index > array->size) doERR("Incorrect array index");
     push(array->data[index]);
     pc+=1;
 }
 
 void doIASTORE() {
+    unsigned short index;
+    word_t value;
     word_t ref = pop();
     array_t *array = get_array(ref);
     if (array == NULL) doERR("Unknown array ref");
 
-    unsigned short index = (unsigned short) pop();
-    word_t value = pop();
+    index = (unsigned short) pop();
+    value = pop();
     if (index > array->size) doERR("Array index out of bounds");
 
     array->data[index] = value;

@@ -102,7 +102,7 @@ void set_local_variable(unsigned short i, word_t value);
  * @param i, index of the constant to obtain
  * @return The constant at location i in the constant pool.
  **/
-word_t get_constant(int i);
+word_t get_constant(unsigned int i);
 
 
 /**

@@ -4,7 +4,7 @@
 
 frame_t *init_frame(frame_t *prev, unsigned short local_size, int pc) {
     frame_t *new_frame = (frame_t *)malloc(sizeof(frame_t));
-    if (new_frame->local_data == NULL) {
+    if (new_frame == NULL) {
         free(new_frame);
         doERR("Error while allocating new_frame memory");
     }
@@ -43,8 +43,9 @@ int push(word_t data) {
 }
 
 word_t pop() {
+    word_t top;
     if (frame->stack_size == 0) doERR("POP while stack is empty");
-    word_t top = tos();
+    top = tos();
     frame->stack_size--;
     frame->stack_data = (word_t *)realloc(frame->stack_data, frame->stack_size * sizeof(word_t));
     if (frame->stack_size > 0 && frame->stack_data == NULL) doERR("Error while scaling down stack_data memory");
