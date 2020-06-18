@@ -14,8 +14,6 @@ typedef struct buffer {
 
 int get_blocks(void);
 
-int check_magic(unsigned int *data);
-
 int init_buffer(char *binary_file);
 
 void destroy_buffer(void);

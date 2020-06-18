@@ -54,7 +54,9 @@ void doERR(const char *msg) {
 }
 
 void doGOTO() {
-    pc += read_short(pc + 1);
+    short offset = read_short(pc + 1);;
+    if (pc + offset < 0 || pc + offset > text_size()) doERR("GOTO out of bounds");
+    pc += offset;
 }
 
 void doHALT() {
@@ -78,7 +80,9 @@ void doIAND() {
 void doIFEQ() {
     word_t A = pop();
     if (A == 0) {
-        pc += read_short(pc + 1);
+        short offset = read_short(pc + 1);
+        if (pc + offset < 0 || pc + offset > text_size()) doERR("IFEW out of bounds");
+        pc += offset;
     } else {
         pc+=3;
     }
@@ -87,6 +91,8 @@ void doIFEQ() {
 void doIFLT() {
     word_t A = pop();
     if (A < 0) {
+        short offset = read_short(pc + 1);
+        if (pc + offset < 0 || pc + offset > text_size()) doERR("IFTL out of bounds");
         pc += read_short(pc + 1);
     } else {
         pc+=3;
@@ -97,6 +103,8 @@ void doICMPEQ() {
     word_t A = pop();
     word_t B = pop();
     if (A == B) {
+        short offset = read_short(pc + 1);
+        if (pc + offset < 0 || pc + offset > text_size()) doERR("ICMPEQ out of bounds");
         pc += read_short(pc + 1);
     } else {
         pc+=3;
@@ -131,10 +139,12 @@ void doIN() {
 void doINVOKEVIRTUAL() {
     unsigned short pre_const_offset = read_unsigned_short(pc + 1);
     int routine_offset = get_constant(pre_const_offset);
+    if (routine_offset + 4 >= text_size() || routine_offset < 0) doERR("Invokevirtual out of bounds");
     unsigned short n_args = (unsigned short) read_unsigned_short(routine_offset);
-    unsigned short local_size = (unsigned short) (read_unsigned_short(routine_offset + 2) + n_args);
+    unsigned short local_size = (unsigned short) read_unsigned_short(routine_offset + 2);
+    unsigned short total_local_size = (unsigned short) ushrt_safe_addition(n_args, local_size);
 
-    frame_t  *new_frame = init_frame(frame, local_size, pc + 3);
+    frame_t  *new_frame = init_frame(frame, total_local_size, pc + 3);
 
     for (int i = n_args - 1; i > 0; i--) {
         new_frame->local_data[i] = pop();
@@ -166,7 +176,7 @@ void doIRETURN() {
     free(frame);
     frame = prev;
 
-    if (frame == NULL) return;
+    if (frame == NULL) doERR("Returned from last frame");
 
     push(return_value);
     detect_garbage();
@@ -436,9 +446,10 @@ bool step() {
             doERR("Unknown OP code");
     }
     if (pc < text_size()) {
-        isfinished = true;
+        isfinished = false;
         return true;
     }
+    isfinished = true;
     return false;
 }
 
@@ -447,7 +458,7 @@ int get_program_counter() {
 }
 
 byte_t get_instruction() {
-    // No bounds check necessary
+    if (pc >= text_size()) doERR("Reading instructions out of bounds");
     return get_text()[pc];
 }
 

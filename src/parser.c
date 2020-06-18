@@ -12,32 +12,20 @@ int get_blocks() {
     buffer->constant_size = swap_uint32(buffer->data[2]) / 4;
     buffer->constants = (word_t *) malloc(buffer->constant_size * 4);
     if (buffer->constants == NULL) {
-        free(buffer->constants);
         return -1;
     }
     for (unsigned int i = 0; i < buffer->constant_size; i++) {
+        if (3 + i >= buffer->data_size) return -1;
         buffer->constants[i] = (word_t) swap_uint32(buffer->data[3 + i]);
     }
 
     // Parse instructions
     buffer->text_size = swap_uint32(buffer->data[4 + buffer->constant_size]);
+    if (buffer->text_size + buffer->constant_size + 5 >= buffer->data_size) return -1;
     buffer->text = (byte_t *) malloc(buffer->text_size);
-    if (buffer->constants == NULL) {
-        free(buffer->constants);
-        free(buffer->text);
-        return -1;
-    }
+    if (buffer->text == NULL) return -1;
     memcpy(buffer->text, (byte_t *) &buffer->data[5 + buffer->constant_size], buffer->text_size);
     return 1;
-}
-
-int check_magic(unsigned int *data) {
-    // Check magic number
-    if (swap_uint32(data[0]) != MAGIC_NUMBER) {
-        fprintf(stderr, "MAGIC NUMBERS DO NOT MATCH...");
-        return -1;
-    }
-    return  1;
 }
 
 int init_buffer(char *binary_file) {
@@ -77,14 +65,14 @@ int init_buffer(char *binary_file) {
     }
 
     // Check magic number
-    if (!check_magic(buffer->data)) {
+    if (swap_uint32(buffer->data[0]) != MAGIC_NUMBER) {
         destroy_buffer();
         fclose(fp);
         return -1;
     }
 
     // Load data blocks;
-    if (!get_blocks()) {
+    if (get_blocks() < 0) {
         destroy_buffer();
         fclose(fp);
         return -1;
