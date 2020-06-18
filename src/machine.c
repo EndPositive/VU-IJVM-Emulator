@@ -20,7 +20,8 @@ int init_ijvm(char *binary_file) {
 
     if (init_arrays() < 0) return -1;
 
-    set_output(stderr);
+    set_output(stdout);
+    set_input(stdin);
 
     return 1;
 }
@@ -137,14 +138,18 @@ void doIN() {
 }
 
 void doINVOKEVIRTUAL() {
-    unsigned short pre_const_offset = read_unsigned_short(pc + 1);
-    int routine_offset = get_constant(pre_const_offset);
-    if (routine_offset + 4 >= text_size() || routine_offset < 0) doERR("Invokevirtual out of bounds");
-    unsigned short n_args = (unsigned short) read_unsigned_short(routine_offset);
-    unsigned short local_size = (unsigned short) read_unsigned_short(routine_offset + 2);
-    unsigned short total_local_size = (unsigned short) ushrt_safe_addition(n_args, local_size);
+    unsigned short pre_const_offset, n_args, local_size, total_local_size;
+    int routine_offset;
+    frame_t  *new_frame;
 
-    frame_t  *new_frame = init_frame(frame, total_local_size, pc + 3);
+    pre_const_offset = read_unsigned_short(pc + 1);
+    routine_offset = get_constant(pre_const_offset);
+    if (routine_offset + 4 >= text_size() || routine_offset < 0) doERR("Invokevirtual out of bounds");
+    n_args = (unsigned short) read_unsigned_short(routine_offset);
+    local_size = (unsigned short) read_unsigned_short(routine_offset + 2);
+    total_local_size = (unsigned short) ushrt_safe_addition(n_args, local_size);
+
+    new_frame = init_frame(frame, total_local_size, pc + 3);
 
     for (int i = n_args - 1; i > 0; i--) {
         new_frame->local_data[i] = pop();

@@ -1,6 +1,17 @@
 # IJVM-Emulator
 
 ## Bonus assignments
+
+### Code hardening
+
+For this assignment I first focused on bounds checking. Meaning that every time the program handles * arrays, it would need to check if it was requesting an index which was either negative or larger than the array. This first included `stack_data`, `local_data`, `text`, and `constants`.
+
+Next, I did some error 'handling' on alloc functions: checking for nullpointers as a result. I focused on making sure to free allocated memory when detecting those. My TA told me, however, that when a program exits it usually frees the block automatically. It doesn't make sense for me to revert it though so I'll keep it.
+
+Finally, I did some fuzzing to check if I had caught all issues. Of course, I had not. I was surprised by many segmentation faults and fixed them after. The issues mostly included forgotten bounds checking, but also showed up in `doINVOKEVIRTUAL`: there could be an overflow in the addition of `local_size` and `n_args` causing not enough memory to be allocated. I noticed that many crashes were caused by the presence of the `IN` instruction. I also saw loads of hangs that I think were caused by the accidental creation of loops in the program. I don't think I can do anything simple about. In the end, I did about 3 runs of fuzzing more than an hour.
+
+Of course, I also passed all the pedantic, leaks, and sanitizer tests.
+
 ### Heap + Garbage Collector
 
 The heap and garbage collector are actually quite simple and probably far too inefficient, but whatever.
