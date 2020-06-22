@@ -215,6 +215,7 @@ void doNOP() {
 
 void doOUT() {
     word_t A = pop();
+    fseek(out, 0, SEEK_END);
     fprintf(out, "%c", A);
     pc++;
 }

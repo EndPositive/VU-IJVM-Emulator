@@ -2,7 +2,7 @@
 
 ## Bonus assignments
 
-### Code hardening
+### Code hardening 10%
 
 For this assignment I first focused on bounds checking. Meaning that every time the program handles * arrays, it would need to check if it was requesting an index which was either negative or larger than the array. This first included `stack_data`, `local_data`, `text`, and `constants`.
 
@@ -12,7 +12,7 @@ Finally, I did some fuzzing to check if I had caught all issues. Of course, I ha
 
 Of course, I also passed all the pedantic, leaks, and sanitizer tests.
 
-### Heap + Garbage Collector
+### Heap + Garbage Collector 15%
 
 The heap and garbage collector are actually quite simple and probably far too inefficient, but whatever.
 
@@ -31,3 +31,20 @@ Round 1: recursive search in each possible value in stack and locals and check i
 Round 2: copy every array which has not been marked with `wipe` to a new `arrays_t` and free the others.
 
 Finally, replace the previous `arrays_t` with the (smaller) new `arrays_t`.
+
+### IJVM-GUI 10%
+
+For this bonus assignment I used nuklear on X11. Tested on WSL2 with VcXsrv. Run `make ijvm-gui` to compile into `ijvm-gui`. I used the X11 sample template given in their [repo](https://github.com/vurtun/nuklear/tree/master/demo/x11).
+
+Usage: `./ijvm-gui binary`
+
+Features:
+* Load input from textfield
+* Show output
+* Stepping by value or run until EOF.
+* View current `pc` and next instruction.
+* View content `stack` and `local` data for each frame
+* View `array_t` reference and contents
+* Reset IJVM state (reload gui)
+
+I assumed the code-style grade and code hardening would not include the code written in this assignment.

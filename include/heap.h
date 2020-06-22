@@ -1,5 +1,5 @@
-#ifndef IJVM_EMULATOR_HEAP_H
-#define IJVM_EMULATOR_HEAP_H
+#ifndef HEAP_H
+#define HEAP_H
 
 #include "ijvm.h"
 #include "frame.h"
@@ -15,6 +15,8 @@ typedef struct arrays {
     unsigned int size;
     array_t **arrays;
 } arrays_t;
+
+arrays_t *arrays;
 
 int init_arrays(void);
 

@@ -4,8 +4,6 @@
 #include <time.h>
 #include <machine.h>
 
-arrays_t *arrays;
-
 int init_arrays() {
     srand( (unsigned int) time(NULL));
     arrays = (arrays_t *)malloc(sizeof(arrays_t));

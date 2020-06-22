@@ -13,11 +13,12 @@ SRCDIR=src
 TSTDIR=tests
 
 LIBS=-lm
+LIBS_GUI=-lm -lX11 -D_POSIX_C_SOURCE=200809L
 
 DEPS = $(wildcard $(IDIR)/*.h)
 SRCS = $(wildcard $(SRCDIR)/*.c)
 _OBJ = $(patsubst $(SRCDIR)/%,$(ODIR)/%,$(SRCS:.c=.o))
-OBJ = $(filter-out $(ODIR)/main.o,$(_OBJ))
+OBJ = $(filter-out $(ODIR)/main.o $(ODIR)/main-gui.o,$(_OBJ))
 
 DEPS2 := $(OBJ:.o=.d)
 -include $(DEPS2)
@@ -33,11 +34,15 @@ ijvm: $(OBJ) $(ODIR)/main.o
 	echo $(SRCS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
+ijvm-gui: $(OBJ) $(ODIR)/main-gui.o
+	echo $(SRCS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS_GUI)
 
 clean:
 	-rm -f $(ODIR)/*.o *~ core.* $(INCDIR)/*~
 	-rm -f $(ODIR)/*.d
 	-rm -f ijvm
+	-rm -f ijvm-gui
 	-rm -f test1 test2 test3 test4 test5 testadvanced*
 	-rm -f dist.tar.gz
 	-rm -rf profdata/
