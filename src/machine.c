@@ -10,7 +10,7 @@
 int pc;
 FILE *out;
 FILE *in;
-bool isfinished = false;
+bool is_finished;
 
 int init_ijvm(char *binary_file) {
     pc = 0;
@@ -22,6 +22,8 @@ int init_ijvm(char *binary_file) {
 
     set_output(stdout);
     set_input(stdin);
+
+    is_finished = false;
 
     return 1;
 }
@@ -55,7 +57,7 @@ void doERR(const char *msg) {
 }
 
 void doGOTO() {
-    short offset = read_short(pc + 1);;
+    short offset = read_short(pc + 1);
     if (pc + offset < 0 || pc + offset > text_size()) doERR("GOTO out of bounds");
     pc += offset;
 }
@@ -215,7 +217,6 @@ void doNOP() {
 
 void doOUT() {
     word_t A = pop();
-    fseek(out, 0, SEEK_END);
     fprintf(out, "%c", A);
     pc++;
 }
@@ -451,12 +452,9 @@ bool step() {
         default:
             doERR("Unknown OP code");
     }
-    if (pc < text_size()) {
-        isfinished = false;
-        return true;
-    }
-    isfinished = true;
-    return false;
+
+    if (pc >= text_size()) is_finished = true;
+    return !is_finished;
 }
 
 int get_program_counter() {
@@ -469,7 +467,7 @@ byte_t get_instruction() {
 }
 
 bool finished() {
-    return isfinished;
+    return is_finished;
 }
 
 void set_input(FILE *fp) {

@@ -63,7 +63,7 @@ ijvm_binaries: tools $(IJVM_FILES)
 
 
 dist: clean
-	tar -cvzf dist.tar.gz src/*.c src/*.h include/*.h Makefile README.md
+	tar -cvzf dist.tar.gz src/*.c include/*.h  lib/*.h lib/*.c Makefile README.md
 
 test%: $(OBJ) $(TSTDIR)/test%.c
 	$(CC) $(CFLAGS) $(LIBS) -o $@ $^

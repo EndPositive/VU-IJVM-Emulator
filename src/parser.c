@@ -5,7 +5,6 @@
 #include <util.h>
 #include <machine.h>
 
-buffer_t *buffer;
 
 int get_blocks() {
     // Parse constants
