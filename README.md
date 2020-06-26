@@ -1,6 +1,10 @@
 # IJVM-Emulator
 
+This is the source code for my IJVM-Emulator. Enjoy :).
+
 ## Bonus assignments
+
+I completed the following four bonus assignments.
 
 ### Code hardening 10%
 
@@ -48,3 +52,9 @@ Features:
 * Reset IJVM state (reload gui)
 
 I assumed the code-style grade and code hardening would not include the code written in this assignment.
+
+### Network Communication 15%
+
+I implemented this bonus assignment early on but really did not like the way the tests were given. Although this assignment is included in the source code, it may be regarded as not present. Since I finished three other bonus assignments (= 35%) it does not matter anyways. I'm pretty sure everything works though :).
+
+I would have loved to do some more assignments but I unfortunately could not find the time. Might do some more during the summer.
